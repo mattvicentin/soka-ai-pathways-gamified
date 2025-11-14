@@ -1,0 +1,698 @@
+{
+  "D1": {
+    "id": "D1",
+    "path": "shared",
+    "pathLabel": "Shared Start",
+    "title": "Designing a Mission-Aligned Seminar",
+    "narrative": "You are preparing an upper-level interdisciplinary seminar at {{institution}}, but you're facing a challenge. Since you last taught it, students' study habits have changed. Now they are accustomed to using ChatGPT and other generative AI tools. You know most use it for brainstorming and finding sources, but the international students rely on it heavily for translation. Additionally, you suspect some students use it for writing and have been able to avoid AI detection tools by using \"humanizers\" and other methods designed to evade detection. As you outline the syllabus, you consider how each possible stance on AI could cultivate {{institution_short}}'s values, including leadership in {{value1}}, {{value2}}, and {{value3}}. As you always ask when designing a course: How can you instill the excitement of your advanced topic and encourage students to use its knowledge to live virtuous and {{value4}}? You consider five positions: 1) ignoring the issue and deferring decisions; 2) prohibiting AI outright; 3) allowing limited, ethical AI use; 4) permitting AI to support much of the work; and 5) designing the course to collaborate with students using AI tools. Each, you realize, involves risks and rewards. What will you choose?",
+    "resources": [
+      {
+        "label": "{{mission_label}}",
+        "url": "{{mission_url}}",
+        "why": "Ground course goals in {{institution_short}}'s mission."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Ignore AI \u2014 Defer decisions",
+        "to": "I1"
+      },
+      {
+        "label": "Prohibitive \u2014 Ban AI",
+        "to": "P1"
+      },
+      {
+        "label": "Balanced / Literacy \u2014 Teach ethical use",
+        "to": "B1"
+      },
+      {
+        "label": "AI\u2011Embracing \u2014 Redesign for creativity",
+        "to": "E1"
+      },
+      {
+        "label": "Collaborative \u2014 Co\u2011learn with students",
+        "to": "C1"
+      }
+    ]
+  },
+  "I1": {
+    "id": "I1",
+    "path": "ignore",
+    "pathLabel": "Ignore / Minimal Intervention",
+    "title": "The Decision to Maintain Status Quo",
+    "narrative": "You're facing a heavy workload this semester\u2014committee work, research deadlines, and advising demands pile up. As you draft your syllabus, you decide to maintain the status quo, adding only a vague academic honesty statement: \"Students are expected to submit their own work.\" This saves you dozens of hours of course redesign. You tell yourself you'll address AI properly next year, when you have more time. For now, you focus on the content you're passionate about teaching.",
+    "resources": [
+      {
+        "label": "EDUCAUSE Review (2024) \u2014 Faculty Workload",
+        "url": "https://er.educause.edu/articles/2024/2/exploring-the-opportunities-and-challenges-with-generative-ai",
+        "why": "Challenge of faculty time and effort in responding to AI."
+      },
+      {
+        "label": "Medium (2024) \u2014 The Cost of Inaction",
+        "url": "https://medium.com/@michi.buehler_52708/generative-ai-in-higher-education-d89b7475f007",
+        "why": "Systemic risk of neglecting AI and avoiding difficult conversations."
+      },
+      {
+        "label": "{{institution_short}} Academic Honesty Policy",
+        "url": "{{integrity_url}}",
+        "why": "Baseline institutional policy."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Continue deferring",
+        "to": "I2"
+      }
+    ]
+  },
+  "I2": {
+    "id": "I2",
+    "path": "ignore",
+    "pathLabel": "Ignore / Minimal Intervention",
+    "title": "Cheating and Complacency",
+    "narrative": "Midway through the semester, you notice something troubling. Student papers suddenly show uniform polish\u2014similar phrasing, consistent formatting, and a surprising lack of the usual errors. During office hours, two dedicated students confide their frustration: \"Everyone else is using AI and getting away with it. We're working so hard, and they just paste prompts.\" You feel caught\u2014you don't have time to investigate every assignment, but the inequity is obvious. Trust begins to erode, and you wonder if your silence communicated approval.",
+    "resources": [
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 Erosion of Trust",
+        "url": "https://er.educause.edu/articles/2025/6/ethics-is-the-edge-the-future-of-ai-in-higher-education",
+        "why": "How lack of clear policy erodes student-faculty trust."
+      },
+      {
+        "label": "HEPI (2025) \u2014 Student AI Survey",
+        "url": "https://www.hepi.ac.uk/reports/student-generative-ai-survey-2025/",
+        "why": "Statistics on high student AI use and belief institutions aren't catching it."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Acknowledge the integrity failure (switch to Prohibitive)",
+        "to": "P1"
+      },
+      {
+        "label": "Shift to literacy focus (switch to Balanced)",
+        "to": "B1"
+      }
+    ]
+  },
+  "P1": {
+    "id": "P1",
+    "path": "prohibitive",
+    "pathLabel": "Prohibitive",
+    "title": "Setting the Boundary",
+    "narrative": "You draft your new course policy: \"AI-generated text is not permitted on any assignments.\" You frame it as protecting academic honesty and human dignity. You also point to {{institution_short}}'s commitment to be {{motto}}, pointing out that allowing machines to think for us or do our work appears to be the opposite of this motto. Finally, you point out that many important leaders have begun to sound the alarm on the potential destructive power of AI, and if your job is to help train the \"pioneers of a global civilization,\" then humanity should be resisting AI, not embracing it, for it is already becoming weaponized. Students nod, although many seem unconvinced. One international student reluctantly and privately asks if translation tools count, while another asks if they can use Grammarly or Microsoft Word's \"algorithmic grammar correction\" tools.",
+    "resources": [
+      {
+        "label": "Frontiers in Psychology (2024) \u2014 From Tools to Threats",
+        "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11020077/",
+        "why": "Impact of AI chatbots on cognitive health and reliance concerns."
+      },
+      {
+        "label": "PeerJ Computer Science (2025) \u2014 AI Detection Accuracy-Bias Trade-offs",
+        "url": "https://peerj.com/articles/cs-2953/",
+        "why": "Empirical study showing AI detectors disproportionately affect non-native English speakers."
+      },
+      {
+        "label": "{{institution_short}} Academic Honesty Policy",
+        "url": "{{integrity_url}}",
+        "why": "Institutional grounding for integrity."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Maintain the ban",
+        "to": "P2A"
+      },
+      {
+        "label": "Clarify exceptions (switch to Balanced)",
+        "to": "B1"
+      }
+    ]
+  },
+  "P2A": {
+    "id": "P2A",
+    "path": "prohibitive",
+    "pathLabel": "Prohibitive",
+    "title": "The Translation Question",
+    "narrative": "A multilingual student confides: \"I only use AI to translate readings so I can understand class discussion.\" You reaffirm your rule: each student should rely on their own effort to develop language skills. You remind yourself the policy safeguards fairness, yet you wonder if students continue to use AI. You take more time to check the AI detection tools, and two assignments raise concerns, but their probability scores are too low to confront the students. Participation drops, and you sense growing distance. At the same time, one student tells you during office hours that she appreciates your stance because she has resisted using AI, and feels that when her classmates use it, they are not learning and gain an unfair advantage.",
+    "resources": [
+      {
+        "label": "EAIE (2025) \u2014 AI and Language Learning",
+        "url": "https://www.eaie.org/resource/embracing-ai-in-international-higher-education-transforming-learning-supporting-diversity-and-preparing-for-the-future.html",
+        "why": "AI promoting accessibility and inclusivity for international students facing language barriers."
+      },
+      {
+        "label": "Center for Engaged Learning (2024) \u2014 AI Translation Tools",
+        "url": "https://www.centerforengagedlearning.org/using-generative-ai-to-support-global-learning-could-leave-cultural-lessons-lost-in-translation/",
+        "why": "Risk of losing cultural context and intercultural understanding with AI translation."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 Guidance for GenAI",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Global equity standards for multilingual learning."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Hold firm",
+        "to": "P3A"
+      },
+      {
+        "label": "Reconsider inclusion (switch to Balanced)",
+        "to": "B2A"
+      }
+    ]
+  },
+  "P3A": {
+    "id": "P3A",
+    "path": "prohibitive",
+    "pathLabel": "Prohibitive",
+    "title": "The Enforcement Semester",
+    "narrative": "You implement AI detection software and restate strict consequences. Midterm, a false flag occurs \u2014 a student accused of AI use insists on innocence. The process consumes hours of investigation alongside meetings with the Dean of Students about due-process and dignity. Students stop visiting office hours; compliance rises, curiosity drops.",
+    "resources": [
+      {
+        "label": "Policy Brief (2025) \u2014 Rethinking AI Detection Tools",
+        "url": "https://idaho.pressbooks.pub/airesourceguide/chapter/policy-brief-rethinking-ai-detection-tools-in-higher-education/",
+        "why": "Limitations and ethical risks of detection tools, emphasizing false positives and erosion of trust."
+      },
+      {
+        "label": "Duke LILE \u2014 Authentic Assessment Over Surveillance",
+        "url": "https://lile.duke.edu/blog/2025/10/authentic-assessment-over-surveillance/",
+        "why": "Shifting from surveillance to authentic assessment."
+      },
+      {
+        "label": "TEQSA \u2014 Evolving Risk to Academic Integrity",
+        "url": "https://www.teqsa.gov.au/sites/default/files/2024-08/evolving-risk-to-academic-integrity-posed-by-generative-artificial-intelligence.pdf",
+        "why": "Technical and legal analysis of detection tool flaws."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Stay the course",
+        "to": "P4"
+      },
+      {
+        "label": "Revisit purpose (switch to Collaborative)",
+        "to": "C1"
+      }
+    ]
+  },
+  "P4": {
+    "id": "P4",
+    "path": "prohibitive",
+    "pathLabel": "Prohibitive",
+    "title": "Outcome: Integrity Preserved, Dialogue Lost?",
+    "narrative": "By the end of your course, your records show near-perfect compliance. But course evaluations describe your class as \"serious, but tense\" and one student remarks \"I had trouble dismantling all the tools, like the automatic grammar checker and I don't think all of my classmates turned theirs off.\" You reflect: was integrity upheld, or did you and your students play \"cat and mouse\" all semester, distracting from the excitement you have previously shared in your field? Have your choices supported {{institution_possessive}} vision of graduates leading ethical lives?",
+    "resources": [
+      {
+        "label": "EdTech Magazine (2024) \u2014 Top IT Issues: Restoring Trust",
+        "url": "https://edtechmagazine.com/higher/article/2024/10/educause-2024-top-10-it-issues-list-seeks-restore-trust-higher-ed",
+        "why": "Strategies for repairing student-faculty relationships through trust."
+      },
+      {
+        "label": "Max Planck Institute (2025) \u2014 AI Increases Dishonesty",
+        "url": "https://www.mpg.de/25409477/0916-bild-delegation-to-artificial-intelligence-can-increase-dishonest-behavior-149835-x",
+        "why": "Empirical evidence on AI delegation and dishonest behavior."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Meta\u2011Reflection",
+        "to": "R1"
+      },
+      {
+        "label": "Restart",
+        "to": "D1"
+      }
+    ]
+  },
+  "B1": {
+    "id": "B1",
+    "path": "balanced",
+    "pathLabel": "Balanced / Literacy",
+    "title": "Designing the New Course",
+    "narrative": "You're drafting a syllabus for a new upper-level interdisciplinary seminar at {{institution}}. You know that students already use AI for translation, brainstorming, and writing support. Rather than ban it, you design a short unit on \"Responsible AI Use\" that ties directly to {{institution_short}}'s value of fostering leaders of {{value1}} who can engage difference with empathy. Students will practice writing with and without AI, comparing their processes and reflecting on what they learn.",
+    "resources": [
+      {
+        "label": "EDUCAUSE (2024) \u2014 A Framework for AI Literacy",
+        "url": "https://www.educause.edu/content/2024/ai-literacy-in-teaching-and-learning/introduction",
+        "why": "Comprehensive framework for AI literacy in teaching and learning."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 Guidance for GenAI in Education",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Global ethical principles for human-centered AI integration."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Create guidance & goals",
+        "to": "B2A"
+      },
+      {
+        "label": "Deeper redesign (switch to Embracing)",
+        "to": "E1"
+      }
+    ]
+  },
+  "B2A": {
+    "id": "B2A",
+    "path": "balanced",
+    "pathLabel": "Balanced / Literacy",
+    "title": "Ethical AI Workshops",
+    "narrative": "Week three. Students bring examples of AI output alongside their own writing. They identify what AI captures \u2014 and what it misses. Discussion turns lively: \"How do we know when AI's help becomes substitution?\" You surface {{institution_short}}'s mission and values, asking which uses cultivate leaders of culture in the community. You realize they're not just learning writing \u2014 they're learning judgment.",
+    "resources": [
+      {
+        "label": "EDUCAUSE (2024) \u2014 A Framework for AI Literacy (Executive Summary)",
+        "url": "https://www.educause.edu/content/2024/ai-literacy-in-teaching-and-learning/executive-summary",
+        "why": "Practical student and faculty competencies for ethical AI use."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 Guidance for GenAI in Education",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Global ethical principles for AI in education."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Facilitate a values-mapping workshop",
+        "to": "B2B"
+      },
+      {
+        "label": "Open exploration (switch to Collaborative)",
+        "to": "C2A"
+      }
+    ]
+  },
+  "B3A": {
+    "id": "B3A",
+    "path": "balanced",
+    "pathLabel": "Balanced / Literacy",
+    "title": "Refining the Policy",
+    "narrative": "Together, the class revises its \"AI Use Agreement.\" Students agree to cite AI assistance, reflect on their process, and take responsibility for final ideas. You highlight alignment with {{institution_short}}'s aim to foster leaders of culture who act with integrity. You notice improved confidence in emerging writers and fewer integrity concerns. Still, updating and clarifying the policy each semester takes time. Some colleagues worry: \"Won't this gray area confuse students?\"",
+    "resources": [
+      {
+        "label": "Campbell University \u2014 AI in Higher Education Survey",
+        "url": "https://sites.campbell.edu/academictechnology/2025/03/06/ai-in-higher-education-a-summary-of-recent-surveys-of-students-and-faculty/",
+        "why": "Need for transparent policies and self-regulation."
+      },
+      {
+        "label": "ResearchGate \u2014 Students' Acceptance and Self-Regulation of GenAI",
+        "url": "https://www.researchgate.net/publication/391714234_Examining_the_Relationship_between_Undergraduate_Students'_Acceptance_Anxiety_and_Online_Self-Regulation_of_Generative_Artificial_Intelligence",
+        "why": "Self-regulation skills and GenAI acceptance."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Keep refining through dialogue",
+        "to": "B4"
+      },
+      {
+        "label": "Simplify & enforce (switch to Prohibitive)",
+        "to": "P2A"
+      }
+    ]
+  },
+  "B4": {
+    "id": "B4",
+    "path": "balanced",
+    "pathLabel": "Balanced / Literacy",
+    "title": "Outcome: Ethical Clarity Through Dialogue",
+    "narrative": "By term's end, students submit reflective essays describing how AI shaped their thinking. Most express gratitude for being trusted to decide responsibly. A few still wish for simpler rules, but many highlight new awareness: \"I learned not just what AI can do \u2014 but what I can do with it.\" You guide them to name which SUA values their choices advanced: {{value1}}, culture, {{value3}}, or {{value4}}. You sense the course has fostered something deeper than compliance: wisdom linked to mission.",
+    "resources": [
+      {
+        "label": "Wageningen University \u2014 In AI We Trust?",
+        "url": "https://research.wur.nl/en/publications/in-ai-we-trust-ethics-artificial-intelligence-and-reliability",
+        "why": "Human judgment and wisdom must lead, not mere reliance on technology."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Meta\u2011Reflection",
+        "to": "R1"
+      },
+      {
+        "label": "Restart",
+        "to": "D1"
+      }
+    ]
+  },
+  "E1": {
+    "id": "E1",
+    "path": "embracing",
+    "pathLabel": "AI\u2011Embracing",
+    "title": "Rethinking the Assignment",
+    "narrative": "You sit at your desk drafting the syllabus for your new upper-level interdisciplinary course. You know students already use AI for brainstorming and translation. Instead of policing that reality, you wonder: \"What if I invited AI use as part of the process itself?\" You rewrite a major paper assignment into an \"AI-Reflection Portfolio,\" where students must document prompts, evaluate AI output, and annotate what they learned about thinking itself. You frame the experiment as cultivating leaders of {{value3}} who can resolve complex problems with creativity and care.",
+    "resources": [
+      {
+        "label": "TEQSA (2025) \u2014 Assessment Redesign",
+        "url": "https://www.instructure.com/en-au/resources/blog/three-pathways-assessment-reform-what-teqsas-ai-guidance-means-universities",
+        "why": "Models for institutional assessment redesign focusing on integrity and authenticity."
+      },
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 The AI Tsunami",
+        "url": "https://er.educause.edu/articles/2025/9/the-ai-tsunami-is-here-reinventing-education-for-the-age-of-ai",
+        "why": "Shift to human-centered approach fostering collaboration and creativity with AI."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Implement the redesign",
+        "to": "E2A"
+      },
+      {
+        "label": "Scale back (switch to Balanced)",
+        "to": "B2A"
+      }
+    ]
+  },
+  "E2A": {
+    "id": "E2A",
+    "path": "embracing",
+    "pathLabel": "AI\u2011Embracing",
+    "title": "First Iteration",
+    "narrative": "Students experiment with AI during early drafts. Some produce nuanced reflections; others hand in work too dependent on the tool. In discussion, you model critical use: showing how to question AI's assumptions. The room fills with excited and uncertain energy. One student says, \"I've never thought so much about how I write.\" Another links the work to preparing for peacebuilding dialogues abroad.",
+    "resources": [
+      {
+        "label": "Transparent AI Integration \u2014 Best Practices for Citing AI",
+        "url": "https://medium.com/@christynaserrano/building-transparency-in-ai-best-practices-for-citing-and-using-ai-in-higher-education-5288c458f353",
+        "why": "Guide for transparent AI use and critical engagement."
+      },
+      {
+        "label": "Education Development Trust \u2014 Metacognition",
+        "url": "https://www.edt.org/insights-from-our-work/metacognition-why-teaching-students-to-think-about-their-learning-matters-more-than-ever",
+        "why": "Teaching metacognitive strategies for deeper learning."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 GenAI in Education",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Human-centered pedagogy."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Deepen design (rubrics & checkpoints)",
+        "to": "E3A"
+      },
+      {
+        "label": "Invite faculty feedback (switch to Collaborative)",
+        "to": "C3A"
+      }
+    ]
+  },
+  "E3A": {
+    "id": "E3A",
+    "path": "embracing",
+    "pathLabel": "AI\u2011Embracing",
+    "title": "The Assessment Challenge",
+    "narrative": "Grading portfolios takes longer than expected. You realize authentic work requires new evaluation criteria, and growth, insight, and self-reflection now matter more than grammar or format. A peer asks, \"Isn't this subjective?\" You reply, \"Maybe, but so is learning.\" By mid-semester, students begin referencing AI critically in discussions about ethics, bias, and creativity, connecting the seminar to {{institution_possessive}} vision of graduates leading {{value4}}.",
+    "resources": [
+      {
+        "label": "OECD \u2014 AI and Education and Skills",
+        "url": "https://www.oecd.org/en/topics/artificial-intelligence-and-education-and-skills.html",
+        "why": "Policy analysis on how AI shifts skills demand and assessment priorities."
+      },
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 Beyond Tool or Threat",
+        "url": "https://er.educause.edu/articles/2025/9/beyond-tool-or-threat-genai-and-the-challenge-it-poses-to-higher-education",
+        "why": "Reimagining purpose and values in authentic assessment."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Partner with the {{research_center}}",
+        "to": "E3B"
+      },
+      {
+        "label": "Simplify (switch to Balanced)",
+        "to": "B3A"
+      }
+    ]
+  },
+  "E4": {
+    "id": "E4",
+    "path": "embracing",
+    "pathLabel": "AI\u2011Embracing",
+    "title": "Outcome: Innovation and Depth",
+    "narrative": "At semester's end, students present reflective projects titled \"What I Learned From My AI Mistakes.\" Their work is messy, honest, and profound. Some still rely too much on the tool, but most articulate a clearer sense of authorship. You feel both exhausted and inspired. When you share at a {{writing_center}} AI workshop, a colleague says, \"This feels like the future of {{institution_short}} education: humanistic, creative, responsible.\" Another confides later on that he doesn't have the time and hasn't gotten the training to repeat your experiment in his course.",
+    "resources": [
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 A More Human University",
+        "url": "https://er.educause.edu/articles/2025/10/a-more-human-university-the-role-of-ai-in-learning",
+        "why": "Scaling meaningful, individualized learning experiences with AI."
+      },
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 Ethics Is the Edge",
+        "url": "https://er.educause.edu/articles/2025/6/ethics-is-the-edge-the-future-of-ai-in-higher-education",
+        "why": "Ethical imperative for governance aligning AI with academic values."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Meta\u2011Reflection",
+        "to": "R1"
+      },
+      {
+        "label": "Restart",
+        "to": "D1"
+      }
+    ]
+  },
+  "C1": {
+    "id": "C1",
+    "path": "collaborative",
+    "pathLabel": "Collaborative",
+    "title": "Opening the Dialogue",
+    "narrative": "You begin the semester with an open question: \"How should we, as a learning community, engage with AI?\" Instead of dictating rules, you invite students to share experiences \u2014 how AI has helped, hindered, or confused them. Together, the class drafts an \"AI Reflection Charter\" that commits to transparency, curiosity, and mutual respect, explicitly linking the work to {{institution_short}}'s mission of fostering leaders of {{value3}} and {{value1}}.",
+    "resources": [
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 In the Room Where It Happens",
+        "url": "https://er.educause.edu/articles/2025/5/in-the-room-where-it-happens-generative-ai-policy-creation-in-higher-education",
+        "why": "Creating room for diverse perspectives in AI policy creation."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 Guidance for GenAI",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Human-centered vision for GenAI in education."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Facilitate collective inquiry",
+        "to": "C2A"
+      },
+      {
+        "label": "Formalize limits (switch to Balanced)",
+        "to": "B2A"
+      }
+    ]
+  },
+  "C2A": {
+    "id": "C2A",
+    "path": "collaborative",
+    "pathLabel": "Collaborative",
+    "title": "Shared Experimentation",
+    "narrative": "Each week, students log one AI interaction \u2014 a prompt, a response, and their reflection on it. In class, small groups analyze where the tool enhanced or hindered their thinking. Surprisingly, students begin to critique AI's biases and limits more deeply than expected. You frame the practice as nurturing leaders of culture in the community who can steward technology with care.",
+    "resources": [
+      {
+        "label": "Campbell University \u2014 AI in Higher Education Survey",
+        "url": "https://sites.campbell.edu/academictechnology/2025/03/06/ai-in-higher-education-a-summary-of-recent-surveys-of-students-and-faculty/",
+        "why": "Student-faculty collaboration on ethical AI guidelines."
+      },
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 A More Human University",
+        "url": "https://er.educause.edu/articles/2025/10/a-more-human-university-the-role-of-ai-in-learning",
+        "why": "Scaling deep, individualized, metacognitive learning with AI."
+      },
+      {
+        "label": "{{institution_short}} Institute for Global Solutions",
+        "url": "{{institution_institute_url}}",
+        "why": "SIGS projects for global cooperation embodying collaborative spirit."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Co-design community storytelling guidelines",
+        "to": "C2B"
+      },
+      {
+        "label": "Standardize (switch to Balanced)",
+        "to": "B3A"
+      }
+    ]
+  },
+  "C3A": {
+    "id": "C3A",
+    "path": "collaborative",
+    "pathLabel": "Collaborative",
+    "title": "AI in the Classroom Workshop",
+    "narrative": "Colleagues hear about your approach and invite you to a workshop on AI in writing and pedagogy. You share anonymized student reflections, both breakthroughs and confusions. Another professor worries about workload: \"How do we grade process fairly?\" You agree: collaboration requires new assessment norms. The group plans a small cross-course study grounded in {{institution_short}}'s values. You worry that this will require 10 hours of work, time you don't have, but it feels necessary.",
+    "resources": [
+      {
+        "label": "Harvard GSE \u2014 AI Can Add to Learning",
+        "url": "https://www.gse.harvard.edu/ideas/news/25/04/ai-can-add-not-just-subtract-learning",
+        "why": "AI adding value to learning, ideal for faculty discussion."
+      },
+      {
+        "label": "EDUCAUSE Review (2024) \u2014 Exploring Opportunities and Challenges",
+        "url": "https://er.educause.edu/articles/2024/2/exploring-the-opportunities-and-challenges-with-generative-ai",
+        "why": "Institutional imperative for stakeholder conversations on AI policy."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Keep co\u2011learning focus",
+        "to": "C4"
+      },
+      {
+        "label": "Move toward formal policy (switch to Balanced)",
+        "to": "B4"
+      }
+    ]
+  },
+  "C4": {
+    "id": "C4",
+    "path": "collaborative",
+    "pathLabel": "Collaborative",
+    "title": "Outcome: Dialogue Becomes the Curriculum, But is it Sustainable?",
+    "narrative": "By semester's end, your class talks about AI as easily as about literature or ethics. Students report feeling trusted, and more responsible as a result. Faculty peers adapt your reflective logging model. The project closes with a sense of optimism, not that you've solved AI in education, but that you've learned to face it together. Still, you know not every course or instructor has the time for this level of mentoring and you worry that the technology is changing much faster than professors and the university can adapt.",
+    "resources": [
+      {
+        "label": "EDUCAUSE Review (2025) \u2014 Ethics Is the Edge",
+        "url": "https://er.educause.edu/articles/2025/6/ethics-is-the-edge-the-future-of-ai-in-higher-education",
+        "why": "Pragmatic ethical framework for integrating AI through dialogue."
+      },
+      {
+        "label": "OECD \u2014 AI and Education and Skills",
+        "url": "https://www.oecd.org/en/topics/artificial-intelligence-and-education-and-skills.html",
+        "why": "Analysis of AI impact on learning and skills, linking collaboration to equity."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Meta\u2011Reflection",
+        "to": "R1"
+      },
+      {
+        "label": "Restart",
+        "to": "D1"
+      }
+    ]
+  },
+  "R1": {
+    "id": "R1",
+    "path": "shared",
+    "pathLabel": "Meta\u2011Reflection",
+    "title": "Teaching for Value Creation in the AI Era",
+    "narrative": "As you moved through the pathways, you balanced integrity, creativity, equity, and trust under real constraints. Summarize what you protected, what you risked, and what you learned. Then, connect those insights to {{institution_short}}'s mission of humanistic, contributive education. What is one concrete next step you will take to integrate these lessons into your next seminar's design, assessment, or dialogue? Thank you for participating in {{institution_short}} AI Pathways Explorer!",
+    "resources": [
+      {
+        "label": "{{mission_label}}",
+        "url": "{{mission_url}}",
+        "why": "Anchor reflections in founding principles."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Restart from the Dilemma",
+        "to": "D1"
+      }
+    ]
+  },
+  "B2B": {
+    "id": "B2B",
+    "path": "balanced",
+    "pathLabel": "Balanced / Literacy",
+    "title": "Human Rights Case Workshop",
+    "narrative": "You anchor the seminar in a human-rights case study drawn from the Pacific Basin. Teams map how AI could support research, storytelling, or advocacy, documenting risks to dignity and accuracy. Students connect decisions to {{institution_short}}'s founding principle of upholding human rights. Debate runs hot when one team argues AI translation could amplify marginalized voices faster.",
+    "resources": [
+      {
+        "label": "{{research_center}}",
+        "url": "{{research_center_url}}",
+        "why": "PBRC's mission for humanistic development and human rights in Asia-Pacific."
+      },
+      {
+        "label": "UNESCO (2023) \u2014 Guidance for GenAI in Education",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000386693",
+        "why": "Ethical guardrails for justice-focused work."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Translate insights into shared policy",
+        "to": "B3A"
+      },
+      {
+        "label": "Shift to collaborative co-design",
+        "to": "C2A"
+      }
+    ]
+  },
+  "E3B": {
+    "id": "E3B",
+    "path": "embracing",
+    "pathLabel": "AI-Embracing",
+    "title": "Community Partnership Dilemma",
+    "narrative": "A Student Fellow from the {{research_center}} asks if your seminar could help her co-create narratives for a justice campaign. Students debate whether to use AI for rapid translation and story drafts. Some argue it could amplify marginalized voices; others worry about accuracy and consent. You remind them of the need to balance efficiency with respect and accuracy.",
+    "resources": [
+      {
+        "label": "{{research_center}}",
+        "url": "{{research_center_url}}",
+        "why": "PBRC's mission for peaceful, humanistic development of Asia-Pacific region."
+      },
+      {
+        "label": "USIP \u2014 Peacebuilding Toolkits",
+        "url": "https://www.usip.org/public-education/educators/classroom-resources",
+        "why": "Framework for incorporating conflict management and peacebuilding concepts."
+      },
+      {
+        "label": "UNESCO \u2014 Guidance for GenAI",
+        "url": "https://www.unesco.org/en/articles/guidance-generative-ai-education-and-research",
+        "why": "Protecting cultural and linguistic diversity when using GenAI."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Document lessons for campus colleagues",
+        "to": "E4"
+      },
+      {
+        "label": "Invite collaborative reflection circle",
+        "to": "C3A"
+      }
+    ]
+  },
+  "C2B": {
+    "id": "C2B",
+    "path": "collaborative",
+    "pathLabel": "Collaborative",
+    "title": "Community Storytelling Lab",
+    "narrative": "Your seminar partners with the {{writing_center}} to host a community storytelling lab. Student teams craft guidelines for using AI to support oral histories from local activists. They debate whether AI summaries honor or flatten lived experience, anchoring decisions in {{institution_short}}'s principle of educating leaders of culture in the community.",
+    "resources": [
+      {
+        "label": "Helping Writers Become Authors \u2014 Intentional Storytelling in the AI Era",
+        "url": "https://www.helpingwritersbecomeauthors.com/why-intentional-storytelling-matters-in-an-era-of-ai-and-algorithm-driven-content/",
+        "why": "How AI risks losing an authentic voice in storytelling."
+      },
+      {
+        "label": "The Guardian (2025) \u2014 AI as a Tool to Sharpen Storytelling",
+        "url": "https://www.theguardian.com/technology/2025/mar/31/ai-is-a-tool-that-can-sharpen-storytelling",
+        "why": "AI can improve storytelling, but only if used well."
+      },
+      {
+        "label": "University {{writing_center}}",
+        "url": "{{writing_center_url}}",
+        "why": "Writing support for ethical narrative practices."
+      }
+    ],
+    "choices": [
+      {
+        "label": "Share findings with faculty peers",
+        "to": "C3A"
+      },
+      {
+        "label": "Document practices for policy work",
+        "to": "B3A"
+      }
+    ]
+  }
+}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Pathways Explorer</title>
+  <meta name="description" content="Interactive explorer for AI pedagogy approaches in higher education." />
+  <!-- Google Fonts: Playfair Display (serif, similar to PP Editorial New) and Inter (sans-serif, similar to Elza) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind via CDN (for quick prototype) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'serif': ['Playfair Display', 'Georgia', 'serif'],
+            'sans': ['Inter', 'Arial', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --color-primary: #0048B7;
+      --color-accent: #FCD43B;
+      --color-ignore: #F3F4F6;
+      --color-prohibitive: #001D61;
+      --color-balanced: #FFE20D;
+      --color-embracing: #249E6B;
+      --color-collaborative: #66B0FF;
+    }
+    
+    /* Dynamic color hover effects */
+    .choice-button:hover {
+      background-color: var(--color-primary) !important;
+      color: white !important;
+    }
+    .hover-primary:hover {
+      color: var(--color-primary) !important;
+    }
+    .badge { 
+      border-radius: 9999px; 
+      padding: 0.25rem 0.75rem; 
+      font-size: .75rem; 
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .path-shared { background:#E5E7EB; color:#111827; }
+    .path-ignore { background:var(--color-ignore); color:#6B7280; border: 1px solid #D1D5DB; }
+    .path-prohibitive { background:var(--color-prohibitive); color:#FFFFFF; }
+    .path-balanced { background:var(--color-balanced); color:#000000; }
+    .path-embracing { background:var(--color-embracing); color:#FFFFFF; }
+    .path-collaborative { background:var(--color-collaborative); color:#000000; }
+    /* Screen reader only content */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 text-gray-900 font-sans">
+  <!-- Game Version Link -->
+  <a href="./game/" 
+     style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #0048B7 0%, #66B0FF 100%); color: white; padding: 12px 20px; border-radius: 50px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(0, 72, 183, 0.3); transition: all 0.3s ease; z-index: 9999; font-size: 14px; display: flex; align-items: center; gap: 8px;"
+     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 72, 183, 0.4)'"
+     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 72, 183, 0.3)'"
+     title="Try the visual novel game version">
+    <span style="font-size: 18px;">🎮</span>
+    <span>Game Version (Beta)</span>
+  </a>
+  
+  <main id="app" class="min-h-screen p-4 sm:p-8" aria-live="polite" role="main"></main>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

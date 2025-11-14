@@ -1,0 +1,17 @@
+Field,Value,Instructions
+Institution Name,Soka University of America,"Full name of your institution (appears throughout site)"
+Institution Short Name,SUA,"Abbreviation (e.g., SUA, MIT, UCLA)"
+Institution Possessive,Soka's,"Possessive form (e.g., Soka's, Stanford's, Yale's)"
+Mission Page URL,https://www.soka.edu/about/suas-heritage/mission-and-values,"Link to your institution's mission/values page"
+Mission Link Label,Soka University Mission,"How to label the mission link (e.g., Stanford Mission and Values)"
+Site Name,Soka AI Pathways Explorer,"Title that appears in browser tab"
+Site Description,Choose-your-own-path explorer for AI in the classroom at Soka University of America,"Meta description for search engines"
+Primary Color,#0048B7,"Hex code for main brand color (headings, buttons)"
+Accent Color,#FCD43B,"Hex code for highlights and accents"
+Ignore Pathway Color,#F3F4F6,"Optional - leave blank to use default gray"
+Prohibitive Pathway Color,#001D61,"Optional - leave blank to use default"
+Balanced Pathway Color,#FFE20D,"Optional - leave blank to use default"
+Embracing Pathway Color,#249E6B,"Optional - leave blank to use default"
+Collaborative Pathway Color,#66B0FF,"Optional - leave blank to use default"
+
+

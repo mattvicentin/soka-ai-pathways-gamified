@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "institution": {
+    "name": "Soka University of America",
+    "shortName": "SUA",
+    "possessive": "Soka's",
+    "missionUrl": "https://www.soka.edu/about/suas-heritage/mission-and-values",
+    "missionLinkLabel": "Soka University Mission"
+  },
+  "branding": {
+    "primaryColor": "#0048B7",
+    "accentColor": "#FCD43B",
+    "pathwayColors": {
+      "ignore": "#F3F4F6",
+      "prohibitive": "#001D61",
+      "balanced": "#FFE20D",
+      "embracing": "#249E6B",
+      "collaborative": "#66B0FF"
+    },
+    "fonts": {
+      "heading": "Playfair Display",
+      "body": "Inter",
+      "fallback": "Arial"
+    }
+  },
+  "values": {
+    "motto": "philosophers of a renaissance of life",
+    "value1": "humanism",
+    "value2": "intercultural dialogue",
+    "value3": "pacifism",
+    "value4": "contributive lives",
+    "principles": [
+      "leaders of culture in the community",
+      "leaders of humanism in society",
+      "leaders of pacifism in the world",
+      "creative coexistence of nature and humanity"
+    ]
+  },
+  "resources": {
+    "hasResearchCenter": true,
+    "researchCenterName": "Pacific Basin Research Center",
+    "researchCenterUrl": "https://www.soka.edu/academics/research/pacific-basin-research-center/about",
+    "hasWritingCenter": true,
+    "writingCenterName": "Writing Center",
+    "writingCenterUrl": "https://catalog.soka.edu/university-writing-center",
+    "integrityPolicyUrl": "https://catalog.soka.edu/academic-honesty",
+    "integrityPolicyLabel": "SUA Academic Honesty Policy"
+  },
+  "metadata": {
+    "siteName": "Soka AI Pathways Explorer",
+    "description": "Choose-your-own-path explorer for AI in the classroom at Soka University of America",
+    "workshopYear": 2025
+  }
+}
+
+

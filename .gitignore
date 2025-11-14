@@ -1,0 +1,32 @@
+# Brand assets (large files, local reference only)
+brand-assets/
+
+# Archive (temporary files)
+archive/
+
+# Node modules
+node_modules/
+
+# Generated output
+customization-kit/output/
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Unity app bundles and large binaries
+game/assets/backgrounds/Classroom Scramble/
+game/assets/backgrounds/__MACOSX/
+*.app/
+*.dylib
+*.dll
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+

@@ -1,0 +1,11 @@
+Field,Value,Instructions
+Has Research Center,Yes,"Yes or No - Does your institution have a research center?"
+Research Center Name,Pacific Basin Research Center,"Name of your research center (required if Yes above)"
+Research Center URL,https://www.soka.edu/academics/research/pacific-basin-research-center/about,"Link to research center (required if Yes above)"
+Has Writing Center,Yes,"Yes or No - Does your institution have a writing center?"
+Writing Center Name,Writing Center,"Name of your writing center (required if Yes above)"
+Writing Center URL,https://catalog.soka.edu/university-writing-center,"Link to writing center (required if Yes above)"
+Academic Integrity Policy URL,https://catalog.soka.edu/academic-honesty,"Link to your academic integrity/honesty policy"
+Academic Integrity Policy Label,SUA Academic Honesty Policy,"How to label the policy link"
+
+

@@ -1,0 +1,111 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 1200px;
+  max-height: 900px;
+}
+
+#game-canvas {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Loading Screen */
+#loading-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0a0a15 0%, #1a1a2e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: opacity 0.5s ease;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  color: white;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.loading-content h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  color: #66B0FF;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+}
+
+.loading-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #66B0FF;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.loading-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #66B0FF 0%, #0048B7 100%);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.loading-text {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .loading-content h1 {
+    font-size: 0.8rem;
+  }
+  
+  .loading-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* Pixel font for game UI elements */
+.pixel-font {
+  font-family: 'Press Start 2P', monospace;
+  image-rendering: pixelated;
+}
+
