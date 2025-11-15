@@ -16,6 +16,8 @@ export class UIScene extends Phaser.Scene {
     this.textPages = [];
     this.currentPage = 0;
     this.continueButton = null;
+    // Timer for delayed choice display
+    this.showChoicesTimer = null;
     // Choice block area for fade overlay (non-interactive, just for reference)
     this.choiceBlockArea = null;
     // Track how many choice buttons are currently hovered
@@ -292,11 +294,23 @@ export class UIScene extends Phaser.Scene {
     
     this.currentNode = node;
     
+    // CRITICAL: Stop any running typewriter and reset state before starting new node
+    this.stopTypewriter();
+    
     // Clear previous choices
     this.clearChoices();
     
+    // Hide continue button and indicator
+    this.hideContinueButton();
+    if (this.continueIndicator) {
+      this.continueIndicator.setVisible(false);
+    }
+    
     // Update title (centered)
     this.titleText.setText(node.title);
+    
+    // Clear narrative text
+    this.narrativeText.setText('');
     
     // Start typewriter effect for narrative
     this.startTypewriter(node.narrative);
@@ -361,7 +375,32 @@ export class UIScene extends Phaser.Scene {
     return pages;
   }
 
+  stopTypewriter() {
+    // Stop any running typewriter timer
+    if (this.typewriterTimer) {
+      this.typewriterTimer.destroy();
+      this.typewriterTimer = null;
+    }
+    
+    // Reset typewriter state
+    this.isTyping = false;
+    this.displayedText = '';
+    this.charIndex = 0;
+    this.textPages = [];
+    this.currentPage = 0;
+    this.fullText = '';
+    
+    // Cancel any pending delayed calls for showing choices
+    if (this.showChoicesTimer) {
+      this.time.removeEvent(this.showChoicesTimer);
+      this.showChoicesTimer = null;
+    }
+  }
+
   startTypewriter(text) {
+    // CRITICAL: Stop any existing typewriter first
+    this.stopTypewriter();
+    
     // Split text into pages
     this.textPages = this.splitTextIntoPages(text);
     this.currentPage = 0;
@@ -369,7 +408,10 @@ export class UIScene extends Phaser.Scene {
     this.displayedText = '';
     this.charIndex = 0;
     this.isTyping = true;
-    this.continueIndicator.setVisible(false);
+    
+    if (this.continueIndicator) {
+      this.continueIndicator.setVisible(false);
+    }
     this.hideContinueButton();
     
     // Clear existing text
@@ -379,6 +421,11 @@ export class UIScene extends Phaser.Scene {
     this.typewriterTimer = this.time.addEvent({
       delay: 30, // ms per character
       callback: () => {
+        // Check if we're still supposed to be typing (prevents race conditions)
+        if (!this.isTyping || !this.typewriterTimer) {
+          return;
+        }
+        
         if (this.charIndex < this.fullText.length) {
           this.displayedText += this.fullText[this.charIndex];
           this.narrativeText.setText(this.displayedText);
@@ -414,6 +461,11 @@ export class UIScene extends Phaser.Scene {
   }
 
   finishTypewriter() {
+    // Prevent multiple calls
+    if (!this.isTyping) {
+      return;
+    }
+    
     this.isTyping = false;
     
     // Stop timer
@@ -422,18 +474,34 @@ export class UIScene extends Phaser.Scene {
       this.typewriterTimer = null;
     }
     
+    // Ensure we have the full text displayed
+    this.narrativeText.setText(this.fullText);
+    this.displayedText = this.fullText;
+    this.charIndex = this.fullText.length;
+    
     // Check if there are more pages
     if (this.currentPage < this.textPages.length - 1) {
       // Show continue button instead of choices
       this.showContinueButton();
     } else {
       // All text displayed, show continue indicator and choices
-      this.continueIndicator.setVisible(true);
+      if (this.continueIndicator) {
+        this.continueIndicator.setVisible(true);
+      }
       this.hideContinueButton();
       
-      // Show choices after a brief delay
-      this.time.delayedCall(300, () => {
-        this.showChoices();
+      // Cancel any existing delayed call
+      if (this.showChoicesTimer) {
+        this.time.removeEvent(this.showChoicesTimer);
+      }
+      
+      // Show choices after a brief delay - only if we're still on the same node
+      this.showChoicesTimer = this.time.delayedCall(300, () => {
+        // Double-check we're still on the same node before showing choices
+        if (this.currentNode && this.currentNode.choices && this.currentNode.choices.length > 0) {
+          this.showChoices();
+        }
+        this.showChoicesTimer = null;
       });
     }
   }
@@ -513,6 +581,16 @@ export class UIScene extends Phaser.Scene {
   }
 
   continueToNextPage() {
+    // Prevent multiple calls or calling while typing
+    if (this.isTyping) {
+      return;
+    }
+    
+    // Make sure we have more pages
+    if (this.currentPage >= this.textPages.length - 1) {
+      return;
+    }
+    
     // Move to next page
     this.currentPage++;
     
@@ -531,6 +609,11 @@ export class UIScene extends Phaser.Scene {
       this.typewriterTimer = this.time.addEvent({
         delay: 30,
         callback: () => {
+          // Check if we're still supposed to be typing (prevents race conditions)
+          if (!this.isTyping || !this.typewriterTimer) {
+            return;
+          }
+          
           if (this.charIndex < this.fullText.length) {
             this.displayedText += this.fullText[this.charIndex];
             this.narrativeText.setText(this.displayedText);
@@ -547,11 +630,23 @@ export class UIScene extends Phaser.Scene {
         },
         loop: true
       });
+    } else {
+      // Shouldn't happen, but handle gracefully
+      console.warn('continueToNextPage called but no more pages');
+      this.finishTypewriter();
     }
   }
 
   showChoices() {
-    if (!this.currentNode || !this.currentNode.choices) return;
+    // CRITICAL: Only show choices if typewriter has finished and we're not typing
+    if (!this.currentNode || !this.currentNode.choices || this.isTyping) {
+      return;
+    }
+    
+    // Make sure we've finished all pages
+    if (this.currentPage < this.textPages.length - 1) {
+      return;
+    }
     
     // Typewriter is always visible (persistent element) - just recalculate paper area
     // Recalculate paper area position (in case screen was resized)
@@ -591,14 +686,30 @@ export class UIScene extends Phaser.Scene {
     const maxTextWidth = Math.max(60, (paperArea.width - (textPadding * 2)) * 0.85);
     
     // Calculate vertical positioning - center text within paper height, moved up slightly
+    // Account for choices that have both header and description (taller)
     const totalChoices = this.currentNode.choices.length;
-    const lineHeight = 40; // Spacing between different options (not within each option)
-    const totalTextHeight = (totalChoices - 1) * lineHeight;
-    const startY = paperArea.y - (totalTextHeight / 2) - 15; // Center vertically, moved up 15px
+    
+    // Reduce spacing when there are many choices (5+) to fit everything on paper
+    const baseLineHeight = totalChoices >= 5 ? 32 : 40; // Reduced spacing for many choices
+    const descriptionHeight = totalChoices >= 5 ? 16 : 20; // Reduced description height for many choices
+    
+    // Calculate total height needed
+    let totalTextHeight = 0;
+    this.currentNode.choices.forEach((choice) => {
+      // Check if choice has description (dash or parentheses)
+      const hasDesc = /[—–-]/.test(choice.label) || /\(/.test(choice.label);
+      totalTextHeight += baseLineHeight + (hasDesc ? descriptionHeight : 0);
+    });
+    totalTextHeight -= baseLineHeight; // Remove last spacing
+    
+    // Adjust start position - move up more when there are many choices
+    const verticalOffset = totalChoices >= 5 ? 25 : 15; // More offset for many choices
+    const startY = paperArea.y - (totalTextHeight / 2) - verticalOffset;
+    let currentY = startY;
     
     // Display each choice as typewritten text on the paper
     this.currentNode.choices.forEach((choice, index) => {
-      const y = startY + (index * lineHeight);
+      const y = currentY;
       
       // Format choice label: split by dash or parentheses
       // Handle em dash (—), en dash (–), regular dash (-), and parentheses
@@ -608,11 +719,34 @@ export class UIScene extends Phaser.Scene {
       let hasDescription = false;
       
       // First check for dash separator (em dash, en dash, or regular dash)
+      // Match various dash types: em dash (—), en dash (–), regular dash (-)
+      // Note: Non-breaking hyphen (‑) is NOT included - it keeps words together
       const dashMatch = choice.label.match(/^(.+?)\s*[—–-]\s*(.+)$/);
       if (dashMatch) {
         firstPart = dashMatch[1].trim();
         secondPart = dashMatch[2].trim();
         hasDescription = true;
+        
+        // Debug: log parsing results for troubleshooting
+        if (index === 0 && this.currentNode.id === 'D1') {
+          console.log('D1 First Choice Parsing:', {
+            label: choice.label,
+            firstPart: firstPart,
+            secondPart: secondPart,
+            dashMatch: dashMatch
+          });
+        }
+        
+        // Safety check: ensure firstPart is not empty
+        if (!firstPart || firstPart === '') {
+          console.warn('Dash match found but firstPart is empty for label:', choice.label);
+          // Fallback: use secondPart as firstPart if firstPart is empty
+          if (secondPart) {
+            firstPart = secondPart;
+            secondPart = '';
+            hasDescription = false;
+          }
+        }
       } else {
         // If no dash, check for parentheses (text in parentheses is always a description)
         const parenMatch = choice.label.match(/^(.+?)\s*\((.+?)\)\s*$/);
@@ -621,14 +755,108 @@ export class UIScene extends Phaser.Scene {
           secondPart = parenMatch[2].trim();
           hasDescription = true;
         } else {
-          // No dash or parentheses found - entire label is header only
-          firstPart = choice.label;
-          hasDescription = false;
+          // Special case: "Partner with the [Capitalized Words]" pattern
+          // Split at "the" when followed by capitalized words (can include lowercase after first letter) or placeholder
+          const theMatch = choice.label.match(/^(.+?\sthe)\s+([A-Z][A-Za-z\s]+|\{\{[^}]+\}\})$/);
+          if (theMatch) {
+            firstPart = theMatch[1].trim();
+            secondPart = theMatch[2].trim();
+            hasDescription = true;
+          } else {
+            // No dash or parentheses found - check if label is too long and needs splitting
+            const label = choice.label;
+            
+            // Check both character length and visual width
+            // Labels longer than 30 characters or that would exceed paper width should be split
+            const labelLength = label.length;
+            const testHeader = `- ${label} -`;
+            const tempText = this.add.text(0, 0, testHeader, {
+              font: 'bold 13px "Special Elite", "Courier New", monospace',
+              wordWrap: { width: maxTextWidth, useAdvancedWrap: true }
+            });
+            const headerWidth = tempText.width;
+            tempText.destroy();
+            
+            // Split if label is longer than 30 characters OR exceeds 80% of max width
+            if (labelLength > 30 || headerWidth > maxTextWidth * 0.8) {
+              // Try to split at natural break points:
+              // 1. After a capitalized word (e.g., "Document Lessons" -> "for campus colleagues")
+              // 2. After common prepositions (for, with, to, etc.)
+              // 3. At a reasonable length (around 20-25 characters)
+              
+              // Pattern 1: Split after common prepositions (for, with, to, from, etc.)
+              // This handles cases like "Document lessons for campus colleagues"
+              const prepMatch = label.match(/^(.+?)\s+(for|with|to|from|at|in|on|by)\s+(.+)$/i);
+              if (prepMatch) {
+                // Capitalize first letter of each word in the header part
+                const headerWords = prepMatch[1].trim().split(' ').map(word => 
+                  word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                );
+                firstPart = headerWords.join(' ');
+                secondPart = (prepMatch[2] + ' ' + prepMatch[3]).trim();
+                hasDescription = true;
+              } else {
+                // Pattern 2: Split after second word (e.g., "Invite collaborative" -> "reflection circle")
+                // Capitalize the words in the header
+                const words = label.split(' ');
+                if (words.length >= 3) {
+                  // Take first 2 words for header, rest for description
+                  const headerWords = words.slice(0, 2).map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                  );
+                  firstPart = headerWords.join(' ');
+                  secondPart = words.slice(2).join(' ');
+                  hasDescription = true;
+                } else {
+                  // Pattern 3: Split at approximately 25 characters, trying to break at word boundary
+                  let headerWords = [];
+                  let descWords = [];
+                  const targetLength = 25;
+                  
+                  for (let i = 0; i < words.length; i++) {
+                    const testLength = headerWords.join(' ').length + (headerWords.length > 0 ? 1 : 0) + words[i].length;
+                    if (testLength <= targetLength || headerWords.length === 0) {
+                      headerWords.push(words[i]);
+                    } else {
+                      descWords = words.slice(i);
+                      break;
+                    }
+                  }
+                  
+                  if (descWords.length > 0) {
+                    // Capitalize header words
+                    const capitalizedHeader = headerWords.map(word => 
+                      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                    );
+                    firstPart = capitalizedHeader.join(' ');
+                    secondPart = descWords.join(' ');
+                    hasDescription = true;
+                  } else {
+                    // Couldn't split intelligently, use entire label as header
+                    firstPart = label;
+                    hasDescription = false;
+                  }
+                }
+              }
+            } else {
+              // Label is short enough, use as header only
+              firstPart = label;
+              hasDescription = false;
+            }
+          }
         }
       }
       
       // Typewritten text style - lines within each option close together, spacing between options
       const textX = paperArea.centerX - 12; // Shift left 12px for better centering on paper
+      
+      // Safety check: ensure firstPart is not empty
+      if (!firstPart || firstPart.trim() === '') {
+        // Fallback: use entire label as header if parsing failed
+        firstPart = choice.label;
+        hasDescription = false;
+        secondPart = '';
+      }
       
       // Always wrap header in hyphens (like first node: "- Header -")
       const headerText = `- ${firstPart} -`;
@@ -649,6 +877,8 @@ export class UIScene extends Phaser.Scene {
       );
       headerTextObj.setOrigin(0.5, 0.5);
       headerTextObj.setDepth(105);
+      headerTextObj.setVisible(true); // Ensure it's visible
+      headerTextObj.setAlpha(1); // Ensure it's not transparent
       headerTextObj.setMask(geometryMask);
       
       // Create regular description text (second part)
@@ -670,6 +900,9 @@ export class UIScene extends Phaser.Scene {
         descriptionTextObj.setDepth(105);
         descriptionTextObj.setMask(geometryMask);
       }
+      
+      // Update currentY for next choice - add spacing based on whether this choice has description
+      currentY += baseLineHeight + (hasDescription ? descriptionHeight : 0);
       
       // Store both text objects for hit area calculation
       const textObjects = [headerTextObj, descriptionTextObj].filter(obj => obj !== null);
@@ -934,8 +1167,16 @@ export class UIScene extends Phaser.Scene {
       }
     });
     this.choiceButtons = [];
+    
+    // Cancel any pending delayed call to show choices
+    if (this.showChoicesTimer) {
+      this.time.removeEvent(this.showChoicesTimer);
+      this.showChoicesTimer = null;
+    }
+    
     // Also hide continue button when clearing choices
     this.hideContinueButton();
+    
     // Typewriter is persistent - always visible, don't hide it
     // Reset hover counter and hide fade overlay
     this.hoveredChoiceCount = 0;
