@@ -26,6 +26,40 @@ export class GameScene extends Phaser.Scene {
     this.audioManager = new AudioManager(this);
     this.audioManager.init();
     
+    // Track if user has interacted (required for browser autoplay policy)
+    this.audioUnlocked = false;
+    
+    // Unlock audio on first user interaction
+    const unlockAudio = () => {
+      if (!this.audioUnlocked) {
+        this.audioUnlocked = true;
+        console.log('🔓 Audio unlocked by user interaction');
+        
+        // Verify audio files are available in cache
+        const testKeys = ['music-contemplative', 'sfx-click'];
+        testKeys.forEach(key => {
+          if (this.cache.audio.exists(key)) {
+            console.log(`✓ Audio file available in cache: ${key}`);
+          } else {
+            console.warn(`✗ Audio file NOT in cache: ${key}`);
+          }
+        });
+        // List all cached audio files
+        const allAudio = this.cache.audio.getKeys();
+        console.log('All audio files in cache:', allAudio);
+        
+        // Try to play music if audio is loaded and we have a node
+        if (this.audioLoaded && this.nodeManager && this.nodeManager.currentNode) {
+          const musicKey = this.audioManager.getMusicForPathway(this.nodeManager.currentNode.path);
+          this.audioManager.playMusic(musicKey);
+        }
+      }
+    };
+    
+    // Listen for user interactions to unlock audio
+    this.input.once('pointerdown', unlockAudio);
+    this.input.keyboard?.once('keydown', unlockAudio);
+    
     // Set up the scene
     this.setupBackground();
     this.setupCharacterSprite();
@@ -49,6 +83,9 @@ export class GameScene extends Phaser.Scene {
       this.parseUrlHash();
       this.loadCurrentNode();
     });
+    
+    // Audio is loaded in BootScene - just mark as ready
+    this.audioLoaded = true;
   }
 
   parseUrlHash() {
@@ -152,9 +189,13 @@ export class GameScene extends Phaser.Scene {
     // Update character emotion
     this.updateCharacterEmotion(node.path);
     
-    // Play appropriate music
-    const musicKey = this.audioManager.getMusicForPathway(node.path);
-    this.audioManager.playMusic(musicKey);
+    // Play appropriate music (only if audio is loaded and unlocked by user)
+    if (this.audioLoaded && this.audioUnlocked) {
+      const musicKey = this.audioManager.getMusicForPathway(node.path);
+      this.audioManager.playMusic(musicKey);
+    } else if (this.audioLoaded && !this.audioUnlocked) {
+      console.log('Audio loaded but waiting for user interaction to play...');
+    }
     
     // Send node data to UI scene
     const uiScene = this.scene.get('UIScene');
@@ -253,6 +294,8 @@ export class GameScene extends Phaser.Scene {
     // Only content (text, choices) and character sprite texture change
     this.loadCurrentNode();
   }
+
+  // Audio is now loaded in BootScene - removed lazy loading method
 
   shutdown() {
     // Clean up event listeners

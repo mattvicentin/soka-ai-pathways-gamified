@@ -18,6 +18,8 @@ export class UIScene extends Phaser.Scene {
     this.continueButton = null;
     // Timer for delayed choice display
     this.showChoicesTimer = null;
+    // Track typewriter sound instance
+    this.typewriterSound = null;
     // Choice block area for fade overlay (non-interactive, just for reference)
     this.choiceBlockArea = null;
     // Track how many choice buttons are currently hovered
@@ -210,13 +212,26 @@ export class UIScene extends Phaser.Scene {
         padding: { x: 7, y: 4 } // Also reduce padding
       }
     );
-    audioBtn.setDepth(101);
+    audioBtn.setDepth(110); // Above typewriter (102) and all other UI elements
     audioBtn.setInteractive({ useHandCursor: true });
     audioBtn.on('pointerdown', () => {
       const gameScene = this.scene.get('GameScene');
       if (gameScene && gameScene.audioManager) {
+        // Unlock audio on first click (browser autoplay policy)
+        if (!gameScene.audioUnlocked) {
+          gameScene.audioUnlocked = true;
+          console.log('🔓 Audio unlocked by audio button click');
+        }
+        
         const isMuted = gameScene.audioManager.toggleMute();
         audioBtn.setText(isMuted ? '🔇' : '🔊');
+        console.log(`Audio ${isMuted ? 'muted' : 'unmuted'}`);
+        
+        // If unmuting and audio is unlocked, try to play music
+        if (!isMuted && gameScene.audioUnlocked && gameScene.audioLoaded && gameScene.nodeManager && gameScene.nodeManager.currentNode) {
+          const musicKey = gameScene.audioManager.getMusicForPathway(gameScene.nodeManager.currentNode.path);
+          gameScene.audioManager.playMusic(musicKey);
+        }
       }
     });
     audioBtn.on('pointerover', () => audioBtn.setBackgroundColor('#555555'));
@@ -382,6 +397,15 @@ export class UIScene extends Phaser.Scene {
       this.typewriterTimer = null;
     }
     
+    // Stop typewriter sound
+    if (this.typewriterSound) {
+      const gameScene = this.scene.get('GameScene');
+      if (gameScene && gameScene.audioManager) {
+        gameScene.audioManager.stopSFX(this.typewriterSound);
+      }
+      this.typewriterSound = null;
+    }
+    
     // Reset typewriter state
     this.isTyping = false;
     this.displayedText = '';
@@ -431,10 +455,11 @@ export class UIScene extends Phaser.Scene {
           this.narrativeText.setText(this.displayedText);
           this.charIndex++;
           
-          // Play text sound (if available)
+          // Play text sound (if available) - only on first character to start looping sound
           const gameScene = this.scene.get('GameScene');
-          if (gameScene && gameScene.audioManager && this.charIndex % 3 === 0) {
-            gameScene.audioManager.playSFX('sfx-text', 0.1);
+          if (gameScene && gameScene.audioManager && this.charIndex === 1) {
+            // Start typewriter sound at 0:07, loop between 0:07 and 0:25 (18 seconds)
+            this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', 0.1, 7, 7, 25);
           }
         } else {
           this.finishTypewriter();
@@ -472,6 +497,15 @@ export class UIScene extends Phaser.Scene {
     if (this.typewriterTimer) {
       this.typewriterTimer.destroy();
       this.typewriterTimer = null;
+    }
+    
+    // Stop typewriter sound
+    if (this.typewriterSound) {
+      const gameScene = this.scene.get('GameScene');
+      if (gameScene && gameScene.audioManager) {
+        gameScene.audioManager.stopSFX(this.typewriterSound);
+      }
+      this.typewriterSound = null;
     }
     
     // Ensure we have the full text displayed
@@ -591,6 +625,15 @@ export class UIScene extends Phaser.Scene {
       return;
     }
     
+    // Stop any existing typewriter sound before starting new page
+    if (this.typewriterSound) {
+      const gameScene = this.scene.get('GameScene');
+      if (gameScene && gameScene.audioManager) {
+        gameScene.audioManager.stopSFX(this.typewriterSound);
+      }
+      this.typewriterSound = null;
+    }
+    
     // Move to next page
     this.currentPage++;
     
@@ -619,10 +662,11 @@ export class UIScene extends Phaser.Scene {
             this.narrativeText.setText(this.displayedText);
             this.charIndex++;
             
-            // Play text sound (if available)
+            // Play text sound (if available) - only on first character to start looping sound
             const gameScene = this.scene.get('GameScene');
-            if (gameScene && gameScene.audioManager && this.charIndex % 3 === 0) {
-              gameScene.audioManager.playSFX('sfx-text', 0.1);
+            if (gameScene && gameScene.audioManager && this.charIndex === 1) {
+              // Start typewriter sound at 0:07, loop between 0:07 and 0:25 (18 seconds)
+              this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', 0.1, 7, 7, 25);
             }
           } else {
             this.finishTypewriter();

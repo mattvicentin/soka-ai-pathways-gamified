@@ -18,6 +18,12 @@ export class BootScene extends Phaser.Scene {
       }
     });
 
+    // Handle file loading errors gracefully
+    this.load.on('loaderror', (file) => {
+      console.warn(`Failed to load file: ${file.key} (${file.src})`);
+      // Continue loading even if some files fail
+    });
+
     // Load actual sprite images
     this.load.image('sprite-professor-neutral', 'assets/sprites/professor-neutral.png');
     this.load.image('sprite-professor-concerned', 'assets/sprites/professor-concerned.png');
@@ -29,8 +35,7 @@ export class BootScene extends Phaser.Scene {
     // Load typewriter sprite
     this.load.image('typewriter', 'assets/sprites/typewriter.png');
     
-    // Load audio files (placeholder - in production, add actual audio files)
-    // For POC, we'll use simple beep sounds or skip audio if files don't exist
+    // Load audio files - errors are handled gracefully so game continues if files fail
     this.loadAudioAssets();
   }
 
@@ -66,27 +71,18 @@ export class BootScene extends Phaser.Scene {
 
 
   loadAudioAssets() {
-    // Attempt to load audio files if they exist
-    // For POC, these are optional and will fail gracefully
+    // Load audio files - game will work without them if files don't exist
+    const audioPath = 'assets/audio/';
     
-    // Background music
-    const musicPath = 'assets/audio/';
-    const sfxPath = 'assets/audio/';
+    // Background music tracks
+    this.load.audio('music-contemplative', audioPath + 'contemplative.mp3');
+    this.load.audio('music-serious', audioPath + 'serious.mp3');
+    this.load.audio('music-hopeful', audioPath + 'hopeful.mp3');
     
-    // Try to load, but don't fail if files don't exist
-    try {
-      // Note: In production, add actual audio files to assets/audio/
-      // For now, these will fail silently and game will work without audio
-      
-      // this.load.audio('music-contemplative', musicPath + 'contemplative.mp3');
-      // this.load.audio('music-serious', musicPath + 'serious.mp3');
-      // this.load.audio('music-hopeful', musicPath + 'hopeful.mp3');
-      // this.load.audio('sfx-click', sfxPath + 'click.mp3');
-      // this.load.audio('sfx-text', sfxPath + 'text.mp3');
-      // this.load.audio('sfx-transition', sfxPath + 'transition.mp3');
-    } catch (error) {
-      console.log('Audio files not loaded (optional for POC)');
-    }
+    // Sound effects
+    this.load.audio('sfx-click', audioPath + 'button_click.mp3');
+    this.load.audio('sfx-text', audioPath + 'typewriter.mp3');
+    this.load.audio('sfx-transition', audioPath + 'transition.mp3');
   }
 
   showError(message) {
