@@ -24,6 +24,9 @@ export class UIScene extends Phaser.Scene {
     this.choiceBlockArea = null;
     // Track how many choice buttons are currently hovered
     this.hoveredChoiceCount = 0;
+    // Volume control panel
+    this.volumePanel = null;
+    this.volumePanelVisible = false;
   }
 
   create() {
@@ -180,28 +183,9 @@ export class UIScene extends Phaser.Scene {
     const height = this.cameras.main.height;
     const padding = 20;
     
-    // Restart button - bottom-left, 30% smaller
-    const restartBtn = this.add.text(
-      padding,
-      height - padding - 20,
-      '↻ Restart',
-      {
-        fontFamily: 'Inter',
-        fontSize: '10px', // 30% smaller (14px * 0.7 ≈ 10px)
-        color: '#FFFFFF',
-        backgroundColor: '#333333',
-        padding: { x: 7, y: 4 } // Also reduce padding
-      }
-    );
-    restartBtn.setDepth(101);
-    restartBtn.setInteractive({ useHandCursor: true });
-    restartBtn.on('pointerdown', () => this.restart());
-    restartBtn.on('pointerover', () => restartBtn.setBackgroundColor('#555555'));
-    restartBtn.on('pointerout', () => restartBtn.setBackgroundColor('#333333'));
-    
-    // Audio toggle button - bottom-right, 30% smaller
+    // Audio toggle button - bottom-left, 30% smaller
     const audioBtn = this.add.text(
-      width - padding - 40,
+      padding,
       height - padding - 20,
       '🔊',
       {
@@ -212,8 +196,34 @@ export class UIScene extends Phaser.Scene {
         padding: { x: 7, y: 4 } // Also reduce padding
       }
     );
+    
+    // Restart button - bottom-right, 30% smaller
+    const restartBtn = this.add.text(
+      width - padding - 40,
+      height - padding - 20,
+      '↻ Restart',
+      {
+        fontFamily: 'Inter',
+        fontSize: '10px', // 30% smaller (14px * 0.7 ≈ 10px)
+        color: '#FFFFFF',
+        backgroundColor: '#333333',
+        padding: { x: 7, y: 4 } // Also reduce padding
+      }
+    );
+    restartBtn.setDepth(103); // Above typewriter (102)
+    restartBtn.setInteractive({ useHandCursor: true });
+    restartBtn.on('pointerdown', () => this.restart());
+    restartBtn.on('pointerover', () => restartBtn.setBackgroundColor('#555555'));
+    restartBtn.on('pointerout', () => restartBtn.setBackgroundColor('#333333'));
     audioBtn.setDepth(110); // Above typewriter (102) and all other UI elements
     audioBtn.setInteractive({ useHandCursor: true });
+    
+    // Store audio button reference
+    this.audioButton = audioBtn;
+    
+    // Create volume control panel (hidden by default)
+    this.createVolumePanel(width, height, padding);
+    
     audioBtn.on('pointerdown', () => {
       const gameScene = this.scene.get('GameScene');
       if (gameScene && gameScene.audioManager) {
@@ -223,15 +233,8 @@ export class UIScene extends Phaser.Scene {
           console.log('🔓 Audio unlocked by audio button click');
         }
         
-        const isMuted = gameScene.audioManager.toggleMute();
-        audioBtn.setText(isMuted ? '🔇' : '🔊');
-        console.log(`Audio ${isMuted ? 'muted' : 'unmuted'}`);
-        
-        // If unmuting and audio is unlocked, try to play music
-        if (!isMuted && gameScene.audioUnlocked && gameScene.audioLoaded && gameScene.nodeManager && gameScene.nodeManager.currentNode) {
-          const musicKey = gameScene.audioManager.getMusicForPathway(gameScene.nodeManager.currentNode.path);
-          gameScene.audioManager.playMusic(musicKey);
-        }
+        // Toggle volume panel instead of mute
+        this.toggleVolumePanel();
       }
     });
     audioBtn.on('pointerover', () => audioBtn.setBackgroundColor('#555555'));
@@ -443,7 +446,7 @@ export class UIScene extends Phaser.Scene {
     
     // Type character by character
     this.typewriterTimer = this.time.addEvent({
-      delay: 30, // ms per character
+      delay: 16, // ms per character (20% faster: 20 * 0.8 = 16)
       callback: () => {
         // Check if we're still supposed to be typing (prevents race conditions)
         if (!this.isTyping || !this.typewriterTimer) {
@@ -459,7 +462,9 @@ export class UIScene extends Phaser.Scene {
           const gameScene = this.scene.get('GameScene');
           if (gameScene && gameScene.audioManager && this.charIndex === 1) {
             // Start typewriter sound at 0:07, loop between 0:07 and 0:25 (18 seconds)
-            this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', 0.1, 7, 7, 25);
+            // Use current SFX volume * 0.17 multiplier (typewriter is 17% of SFX volume)
+            const typewriterVol = gameScene.audioManager.sfxVolume * 0.17;
+            this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', typewriterVol, 7, 7, 25);
           }
         } else {
           this.finishTypewriter();
@@ -650,7 +655,7 @@ export class UIScene extends Phaser.Scene {
       
       // Type character by character
       this.typewriterTimer = this.time.addEvent({
-        delay: 30,
+        delay: 16, // ms per character (20% faster: 20 * 0.8 = 16)
         callback: () => {
           // Check if we're still supposed to be typing (prevents race conditions)
           if (!this.isTyping || !this.typewriterTimer) {
@@ -666,7 +671,9 @@ export class UIScene extends Phaser.Scene {
             const gameScene = this.scene.get('GameScene');
             if (gameScene && gameScene.audioManager && this.charIndex === 1) {
               // Start typewriter sound at 0:07, loop between 0:07 and 0:25 (18 seconds)
-              this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', 0.1, 7, 7, 25);
+              // Use current SFX volume * 0.17 multiplier (typewriter is 17% of SFX volume)
+              const typewriterVol = gameScene.audioManager.sfxVolume * 0.17;
+              this.typewriterSound = gameScene.audioManager.playSFX('sfx-text', typewriterVol, 7, 7, 25);
             }
           } else {
             this.finishTypewriter();
@@ -1245,6 +1252,353 @@ export class UIScene extends Phaser.Scene {
     
     // Tell GameScene to change node
     gameScene.events.emit('changeNode', nextNodeId);
+  }
+
+  createVolumePanel(width, height, padding) {
+    const panelWidth = 300;
+    const panelHeight = 200;
+    const panelX = padding + panelWidth / 2; // Positioned above audio button (now on left)
+    const panelY = height - padding - 20 - panelHeight / 2 - 30;
+    
+    // Panel background
+    const panelBg = this.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0x1a1a2e, 0.95);
+    panelBg.setStrokeStyle(3, 0x66B0FF, 1);
+    panelBg.setDepth(111);
+    panelBg.setVisible(false);
+    
+    // Panel title
+    const titleText = this.add.text(panelX, panelY - panelHeight / 2 + 20, 'Options', {
+      fontFamily: 'Inter',
+      fontSize: '18px',
+      fontStyle: 'bold',
+      color: '#66B0FF'
+    });
+    titleText.setOrigin(0.5, 0.5);
+    titleText.setDepth(112);
+    titleText.setVisible(false);
+    
+    // Music slider
+    const musicY = panelY - 20;
+    const musicLabel = this.add.text(panelX - panelWidth / 2 + 20, musicY, 'Music', {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      color: '#FFFFFF'
+    });
+    musicLabel.setOrigin(0, 0.5);
+    musicLabel.setDepth(112);
+    musicLabel.setVisible(false);
+    
+    // Music slider track
+    const sliderWidth = 180;
+    const sliderX = panelX - panelWidth / 2 + 80;
+    const sliderTrack = this.add.rectangle(sliderX + sliderWidth / 2, musicY, sliderWidth, 6, 0x555555);
+    sliderTrack.setDepth(112);
+    sliderTrack.setVisible(false);
+    sliderTrack.setInteractive({ useHandCursor: true });
+    
+    // Music slider handle
+    const gameScene = this.scene.get('GameScene');
+    const musicVolume = gameScene && gameScene.audioManager ? gameScene.audioManager.musicVolume : 0.144;
+    const musicHandleX = sliderX + (musicVolume * sliderWidth);
+    const musicHandle = this.add.rectangle(musicHandleX, musicY, 20, 20, 0x66B0FF);
+    musicHandle.setDepth(113);
+    musicHandle.setVisible(false);
+    musicHandle.setInteractive({ useHandCursor: true });
+    
+    // Music - button
+    const musicMinus = this.add.text(sliderX - 20, musicY, '−', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#FFFFFF'
+    });
+    musicMinus.setOrigin(0.5, 0.5);
+    musicMinus.setDepth(112);
+    musicMinus.setVisible(false);
+    musicMinus.setInteractive({ useHandCursor: true });
+    
+    // Music + button
+    const musicPlus = this.add.text(sliderX + sliderWidth + 20, musicY, '+', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#FFFFFF'
+    });
+    musicPlus.setOrigin(0.5, 0.5);
+    musicPlus.setDepth(112);
+    musicPlus.setVisible(false);
+    musicPlus.setInteractive({ useHandCursor: true });
+    
+    // SFX slider
+    const sfxY = panelY + 30;
+    const sfxLabel = this.add.text(panelX - panelWidth / 2 + 20, sfxY, 'Sfx', {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      color: '#FFFFFF'
+    });
+    sfxLabel.setOrigin(0, 0.5);
+    sfxLabel.setDepth(112);
+    sfxLabel.setVisible(false);
+    
+    // SFX slider track
+    const sfxSliderTrack = this.add.rectangle(sliderX + sliderWidth / 2, sfxY, sliderWidth, 6, 0x555555);
+    sfxSliderTrack.setDepth(112);
+    sfxSliderTrack.setVisible(false);
+    sfxSliderTrack.setInteractive({ useHandCursor: true });
+    
+    // SFX slider handle
+    const sfxVolume = gameScene && gameScene.audioManager ? gameScene.audioManager.sfxVolume : 0.5;
+    const sfxHandleX = sliderX + (sfxVolume * sliderWidth);
+    const sfxHandle = this.add.rectangle(sfxHandleX, sfxY, 20, 20, 0x66B0FF);
+    sfxHandle.setDepth(113);
+    sfxHandle.setVisible(false);
+    sfxHandle.setInteractive({ useHandCursor: true });
+    
+    // SFX - button
+    const sfxMinus = this.add.text(sliderX - 20, sfxY, '−', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#FFFFFF'
+    });
+    sfxMinus.setOrigin(0.5, 0.5);
+    sfxMinus.setDepth(112);
+    sfxMinus.setVisible(false);
+    sfxMinus.setInteractive({ useHandCursor: true });
+    
+    // SFX + button
+    const sfxPlus = this.add.text(sliderX + sliderWidth + 20, sfxY, '+', {
+      fontFamily: 'Arial',
+      fontSize: '18px',
+      color: '#FFFFFF'
+    });
+    sfxPlus.setOrigin(0.5, 0.5);
+    sfxPlus.setDepth(112);
+    sfxPlus.setVisible(false);
+    sfxPlus.setInteractive({ useHandCursor: true });
+    
+    // Mute/Unmute button
+    const muteBtn = this.add.text(panelX - 60, panelY + panelHeight / 2 - 20, 'Mute', {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      color: '#66B0FF'
+    });
+    muteBtn.setOrigin(0.5, 0.5);
+    muteBtn.setDepth(112);
+    muteBtn.setVisible(false);
+    muteBtn.setInteractive({ useHandCursor: true });
+    
+    // Exit button
+    const exitBtn = this.add.text(panelX + 60, panelY + panelHeight / 2 - 20, 'Exit', {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      color: '#66B0FF'
+    });
+    exitBtn.setOrigin(0.5, 0.5);
+    exitBtn.setDepth(112);
+    exitBtn.setVisible(false);
+    exitBtn.setInteractive({ useHandCursor: true });
+    
+    // Store panel elements
+    this.volumePanel = {
+      bg: panelBg,
+      title: titleText,
+      musicLabel,
+      musicTrack: sliderTrack,
+      musicHandle,
+      musicMinus,
+      musicPlus,
+      sfxLabel,
+      sfxTrack: sfxSliderTrack,
+      sfxHandle,
+      sfxMinus,
+      sfxPlus,
+      mute: muteBtn,
+      exit: exitBtn,
+      sliderX,
+      sliderWidth,
+      musicY,
+      sfxY
+    };
+    
+    // Set up interactions
+    this.setupVolumeSliderInteractions();
+  }
+  
+  setupVolumeSliderInteractions() {
+    const panel = this.volumePanel;
+    const gameScene = this.scene.get('GameScene');
+    
+    if (!gameScene || !gameScene.audioManager) return;
+    
+    const audioManager = gameScene.audioManager;
+    
+    // Music slider drag
+    let isDraggingMusic = false;
+    panel.musicHandle.on('pointerdown', (pointer) => {
+      isDraggingMusic = true;
+    });
+    
+    this.input.on('pointermove', (pointer) => {
+      if (isDraggingMusic && panel.musicHandle.visible) {
+        const newX = Phaser.Math.Clamp(pointer.x, panel.sliderX, panel.sliderX + panel.sliderWidth);
+        panel.musicHandle.x = newX;
+        const volume = (newX - panel.sliderX) / panel.sliderWidth;
+        audioManager.setMusicVolume(volume);
+      }
+    });
+    
+    this.input.on('pointerup', () => {
+      isDraggingMusic = false;
+    });
+    
+    // Music track click to jump
+    panel.musicTrack.on('pointerdown', (pointer) => {
+      const localX = pointer.x - panel.sliderX;
+      const volume = Phaser.Math.Clamp(localX / panel.sliderWidth, 0, 1);
+      audioManager.setMusicVolume(volume);
+      panel.musicHandle.x = panel.sliderX + (volume * panel.sliderWidth);
+    });
+    
+    // Music +/- buttons
+    panel.musicMinus.on('pointerdown', () => {
+      const currentVol = audioManager.musicVolume;
+      const newVol = Math.max(0, currentVol - 0.1);
+      audioManager.setMusicVolume(newVol);
+      panel.musicHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
+    });
+    
+    panel.musicPlus.on('pointerdown', () => {
+      const currentVol = audioManager.musicVolume;
+      const newVol = Math.min(1, currentVol + 0.1);
+      audioManager.setMusicVolume(newVol);
+      panel.musicHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
+    });
+    
+    // SFX slider drag
+    let isDraggingSFX = false;
+    panel.sfxHandle.on('pointerdown', (pointer) => {
+      isDraggingSFX = true;
+    });
+    
+    this.input.on('pointermove', (pointer) => {
+      if (isDraggingSFX && panel.sfxHandle.visible) {
+        const newX = Phaser.Math.Clamp(pointer.x, panel.sliderX, panel.sliderX + panel.sliderWidth);
+        panel.sfxHandle.x = newX;
+        const volume = (newX - panel.sliderX) / panel.sliderWidth;
+        audioManager.setSFXVolume(volume);
+        // Update typewriter sound volume if it's playing
+        if (this.typewriterSound && this.typewriterSound.isPlaying) {
+          this.typewriterSound.setVolume(volume * 0.17); // Typewriter uses 0.17 of SFX volume
+        }
+      }
+    });
+    
+    this.input.on('pointerup', () => {
+      isDraggingSFX = false;
+    });
+    
+    // SFX track click to jump
+    panel.sfxTrack.on('pointerdown', (pointer) => {
+      const localX = pointer.x - panel.sliderX;
+      const volume = Phaser.Math.Clamp(localX / panel.sliderWidth, 0, 1);
+      audioManager.setSFXVolume(volume);
+      panel.sfxHandle.x = panel.sliderX + (volume * panel.sliderWidth);
+      // Update typewriter sound volume if it's playing
+      // Typewriter should be 0.17 when SFX is at 1.0, so scale proportionally
+      if (this.typewriterSound && this.typewriterSound.isPlaying) {
+        this.typewriterSound.setVolume(volume * 0.17);
+      }
+    });
+    
+    // SFX +/- buttons
+    panel.sfxMinus.on('pointerdown', () => {
+      const currentVol = audioManager.sfxVolume;
+      const newVol = Math.max(0, currentVol - 0.1);
+      audioManager.setSFXVolume(newVol);
+      panel.sfxHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
+      // Update typewriter sound volume if it's playing
+      if (this.typewriterSound && this.typewriterSound.isPlaying) {
+        this.typewriterSound.setVolume(newVol * 0.17); // Typewriter uses 0.17 of SFX volume
+      }
+    });
+    
+    panel.sfxPlus.on('pointerdown', () => {
+      const currentVol = audioManager.sfxVolume;
+      const newVol = Math.min(1, currentVol + 0.1);
+      audioManager.setSFXVolume(newVol);
+      panel.sfxHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
+      // Update typewriter sound volume if it's playing
+      if (this.typewriterSound && this.typewriterSound.isPlaying) {
+        this.typewriterSound.setVolume(newVol * 0.17); // Typewriter uses 0.17 of SFX volume
+      }
+    });
+    
+    // Mute/Unmute button
+    panel.mute.on('pointerdown', () => {
+      const isMuted = audioManager.toggleMute();
+      panel.mute.setText(isMuted ? 'Unmute' : 'Mute');
+      this.audioButton.setText(isMuted ? '🔇' : '🔊');
+    });
+    
+    // Exit button
+    panel.exit.on('pointerdown', () => {
+      this.toggleVolumePanel();
+    });
+    
+    // Hover effects
+    [panel.musicMinus, panel.musicPlus, panel.sfxMinus, panel.sfxPlus, panel.mute, panel.exit].forEach(btn => {
+      btn.on('pointerover', () => {
+        if (btn === panel.exit || btn === panel.mute) {
+          btn.setColor('#FFFFFF');
+        } else {
+          btn.setColor('#66B0FF');
+        }
+      });
+      btn.on('pointerout', () => {
+        if (btn === panel.exit || btn === panel.mute) {
+          btn.setColor('#66B0FF');
+        } else {
+          btn.setColor('#FFFFFF');
+        }
+      });
+    });
+  }
+  
+  toggleVolumePanel() {
+    this.volumePanelVisible = !this.volumePanelVisible;
+    
+    if (!this.volumePanel) return;
+    
+    const panel = this.volumePanel;
+    const gameScene = this.scene.get('GameScene');
+    
+    // Update slider positions based on current volumes
+    if (gameScene && gameScene.audioManager) {
+      const audioManager = gameScene.audioManager;
+      panel.musicHandle.x = panel.sliderX + (audioManager.musicVolume * panel.sliderWidth);
+      panel.sfxHandle.x = panel.sliderX + (audioManager.sfxVolume * panel.sliderWidth);
+    }
+    
+    // Show/hide all panel elements
+    const elements = [
+      panel.bg, panel.title, panel.musicLabel, panel.musicTrack, panel.musicHandle,
+      panel.musicMinus, panel.musicPlus, panel.sfxLabel, panel.sfxTrack, panel.sfxHandle,
+      panel.sfxMinus, panel.sfxPlus, panel.mute, panel.exit
+    ];
+    
+    // Update mute button text
+    if (gameScene && gameScene.audioManager) {
+      const isMuted = gameScene.audioManager.isMuted;
+      panel.mute.setText(isMuted ? 'Unmute' : 'Mute');
+    }
+    
+    elements.forEach(element => {
+      element.setVisible(this.volumePanelVisible);
+    });
+    
+    // Update audio button icon based on mute state
+    if (gameScene && gameScene.audioManager) {
+      const isMuted = gameScene.audioManager.isMuted;
+      this.audioButton.setText(isMuted ? '🔇' : '🔊');
+    }
   }
 
   restart() {

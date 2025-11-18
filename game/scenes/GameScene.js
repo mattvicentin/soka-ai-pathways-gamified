@@ -9,6 +9,7 @@ export class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
     this.currentSprite = null;
     this.currentBackground = null;
+    this.currentPathway = null; // Track current pathway to avoid restarting music unnecessarily
   }
 
   create() {
@@ -189,10 +190,15 @@ export class GameScene extends Phaser.Scene {
     // Update character emotion
     this.updateCharacterEmotion(node.path);
     
-    // Play appropriate music (only if audio is loaded and unlocked by user)
+    // Play appropriate music only if pathway changed (only if audio is loaded and unlocked by user)
     if (this.audioLoaded && this.audioUnlocked) {
-      const musicKey = this.audioManager.getMusicForPathway(node.path);
-      this.audioManager.playMusic(musicKey);
+      // Only change music if we're switching to a different pathway, or if no music is playing yet
+      if (this.currentPathway !== node.path || !this.audioManager.currentMusic) {
+        const musicKey = this.audioManager.getMusicForPathway(node.path);
+        this.audioManager.playMusic(musicKey);
+        this.currentPathway = node.path; // Update tracked pathway
+      }
+      // If staying in same pathway, keep current music playing
     } else if (this.audioLoaded && !this.audioUnlocked) {
       console.log('Audio loaded but waiting for user interaction to play...');
     }

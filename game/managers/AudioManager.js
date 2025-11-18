@@ -6,7 +6,8 @@ export class AudioManager {
   constructor(scene) {
     this.scene = scene;
     this.currentMusic = null;
-    this.musicVolume = 0.18; // Reduced by 40% (from 0.3 to 0.18)
+    this.currentMusicKey = null; // Track which music track is playing
+    this.musicVolume = 0.144; // Reduced by 20% from previous (0.18 * 0.8 = 0.144)
     this.sfxVolume = 0.5;
     this.isMuted = false;
   }
@@ -33,6 +34,7 @@ export class AudioManager {
     if (this.currentMusic) {
       this.currentMusic.stop();
       this.currentMusic = null;
+      this.currentMusicKey = null;
     }
     
     // Check if audio exists in cache (audio loaded in BootScene is in global cache)
@@ -44,19 +46,34 @@ export class AudioManager {
       return;
     }
     
+    // Use base music volume for all tracks (hopeful is now adjustable like others)
+    let trackVolume = this.musicVolume;
+    
     // Play new music - use scene's sound manager which has access to cached audio
     try {
       this.currentMusic = this.scene.sound.add(key, {
         loop: loop,
-        volume: this.musicVolume
+        volume: trackVolume
       });
       
       if (this.currentMusic) {
+        this.currentMusicKey = key; // Track which music is playing
         this.currentMusic.play();
-        console.log(`🎵 Playing music: ${key} (volume: ${this.musicVolume})`);
+        
+        // Explicitly set volume after play to ensure it's applied
+        this.currentMusic.setVolume(trackVolume);
+        
+        console.log(`🎵 Playing music: ${key} (volume: ${trackVolume}, actual volume: ${this.currentMusic.volume})`);
         
         // Add event listeners to track playback
-        this.currentMusic.on('play', () => console.log(`▶️ Music started: ${key}`));
+        this.currentMusic.on('play', () => {
+          console.log(`▶️ Music started: ${key} (volume: ${this.currentMusic.volume})`);
+          // Double-check volume is set correctly after play
+          if (key === 'music-hopeful' && this.currentMusic.volume !== trackVolume) {
+            console.warn(`⚠️ Hopeful volume mismatch! Expected ${trackVolume}, got ${this.currentMusic.volume}`);
+            this.currentMusic.setVolume(trackVolume);
+          }
+        });
         this.currentMusic.on('complete', () => console.log(`⏹️ Music completed: ${key}`));
         this.currentMusic.on('looped', () => console.log(`🔁 Music looped: ${key}`));
       } else {
@@ -71,6 +88,7 @@ export class AudioManager {
     if (this.currentMusic) {
       this.currentMusic.stop();
       this.currentMusic = null;
+      this.currentMusicKey = null;
     }
   }
 
@@ -83,7 +101,11 @@ export class AudioManager {
       return null;
     }
     
-    const sfxVolume = volume !== null ? volume : this.sfxVolume;
+    // If a specific volume is passed, multiply it by the current SFX volume setting
+    // This ensures all SFX respect the slider (e.g., 0.2 * 0.5 = 0.1 if slider is at 50%)
+    // If no volume is passed, use the SFX volume directly
+    const baseVolume = volume !== null ? volume : 1.0;
+    const sfxVolume = baseVolume * this.sfxVolume;
     try {
       const sfx = this.scene.sound.add(key, { 
         volume: sfxVolume
@@ -193,12 +215,18 @@ export class AudioManager {
   setMusicVolume(volume) {
     this.musicVolume = Math.max(0, Math.min(1, volume));
     if (this.currentMusic) {
+      // Update volume of currently playing music
       this.currentMusic.setVolume(this.musicVolume);
+      console.log(`Volume updated: ${this.currentMusicKey || 'music'} to ${this.musicVolume}`);
     }
   }
 
   setSFXVolume(volume) {
     this.sfxVolume = Math.max(0, Math.min(1, volume));
+    // Update volume of any currently playing SFX sounds
+    // Note: We track typewriter sound in UIScene, so we'll update it there
+    // For other SFX, they're typically short and will use new volume on next play
+    console.log(`SFX volume updated to ${this.sfxVolume}`);
   }
 
   // Get music track for pathway
