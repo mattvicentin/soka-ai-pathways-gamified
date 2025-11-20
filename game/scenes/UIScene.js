@@ -1255,163 +1255,134 @@ export class UIScene extends Phaser.Scene {
   }
 
   createVolumePanel(width, height, padding) {
-    const panelWidth = 300;
-    const panelHeight = 200;
-    const panelX = padding + panelWidth / 2; // Positioned above audio button (now on left)
-    const panelY = height - padding - 20 - panelHeight / 2 - 30;
+    // Use cloud sprite as panel background
+    // Position on far left to avoid covering character (character is at 32% from left)
+    const panelX = padding + 120; // Smaller offset to keep it on far left
+    const panelY = height - padding - 20 - 80; // Moved down (was -120, now -80)
     
-    // Panel background
-    const panelBg = this.add.rectangle(panelX, panelY, panelWidth, panelHeight, 0x1a1a2e, 0.95);
-    panelBg.setStrokeStyle(3, 0x66B0FF, 1);
+    // Create cloud sprite - scale it to appropriate size for the panel
+    const panelBg = this.add.image(panelX, panelY, 'cloud');
+    panelBg.setOrigin(0.5, 0.5);
     panelBg.setDepth(111);
     panelBg.setVisible(false);
     
-    // Panel title
-    const titleText = this.add.text(panelX, panelY - panelHeight / 2 + 20, 'Options', {
-      fontFamily: 'Inter',
-      fontSize: '18px',
-      fontStyle: 'bold',
-      color: '#66B0FF'
+    // Scale cloud to fit content (slightly larger to accommodate elements)
+    // Wait for sprite to load, then scale
+    this.time.delayedCall(50, () => {
+      if (panelBg && panelBg.width && panelBg.height) {
+        const targetWidth = 260; // Increased from 240
+        const targetHeight = 200; // Increased from 180
+        const spriteWidth = panelBg.width;
+        const spriteHeight = panelBg.height;
+        const scaleX = targetWidth / spriteWidth;
+        const scaleY = targetHeight / spriteHeight;
+        panelBg.setScale(Math.min(scaleX, scaleY)); // Use smaller scale to fit inside cloud
+        console.log(`Cloud sprite scaled: ${spriteWidth}x${spriteHeight} -> scale ${Math.min(scaleX, scaleY)}`);
+      } else {
+        console.warn('Cloud sprite dimensions not available:', panelBg);
+      }
     });
-    titleText.setOrigin(0.5, 0.5);
-    titleText.setDepth(112);
-    titleText.setVisible(false);
     
-    // Music slider
-    const musicY = panelY - 20;
-    const musicLabel = this.add.text(panelX - panelWidth / 2 + 20, musicY, 'Music', {
+    // Store actual panel dimensions for positioning elements
+    const panelWidth = 260;
+    const panelHeight = 200;
+    
+    // Music slider - positioned inside cloud, more compact
+    const musicY = panelY - 20; // Closer to center
+    // Music slider track - shortened by half, centered horizontally in cloud
+    const sliderWidth = 48; // Half of 95
+    const sliderX = panelX - sliderWidth / 2 + 10; // Moved 10px to the right for better centering
+    
+    // Music label - positioned closer to slider, moved right, white with black outline
+    const musicLabel = this.add.text(panelX - sliderWidth / 2 + 2, musicY, 'Music', {
       fontFamily: 'Inter',
-      fontSize: '14px',
-      color: '#FFFFFF'
+      fontSize: '9px',
+      color: '#FFFFFF', // White text
+      stroke: '#000000', // Black outline
+      strokeThickness: 4 // Thick outline
     });
-    musicLabel.setOrigin(0, 0.5);
+    musicLabel.setOrigin(1, 0.5); // Right-aligned so it ends before the slider
     musicLabel.setDepth(112);
     musicLabel.setVisible(false);
     
-    // Music slider track
-    const sliderWidth = 180;
-    const sliderX = panelX - panelWidth / 2 + 80;
-    const sliderTrack = this.add.rectangle(sliderX + sliderWidth / 2, musicY, sliderWidth, 6, 0x555555);
+    const sliderTrack = this.add.rectangle(panelX + 10, musicY, sliderWidth, 3, 0x555555); // Moved 10px right
     sliderTrack.setDepth(112);
     sliderTrack.setVisible(false);
     sliderTrack.setInteractive({ useHandCursor: true });
     
-    // Music slider handle
+    // Music slider handle - square, white with thick black outline
     const gameScene = this.scene.get('GameScene');
     const musicVolume = gameScene && gameScene.audioManager ? gameScene.audioManager.musicVolume : 0.144;
     const musicHandleX = sliderX + (musicVolume * sliderWidth);
-    const musicHandle = this.add.rectangle(musicHandleX, musicY, 20, 20, 0x66B0FF);
+    const musicHandle = this.add.rectangle(musicHandleX, musicY, 12, 12, 0xFFFFFF); // White square
+    musicHandle.setStrokeStyle(3, 0x000000, 1); // Thick black outline
     musicHandle.setDepth(113);
     musicHandle.setVisible(false);
     musicHandle.setInteractive({ useHandCursor: true });
     
-    // Music - button
-    const musicMinus = this.add.text(sliderX - 20, musicY, '−', {
+    // Music + button - positioned closer to slider (minus button removed)
+    const musicPlus = this.add.text(sliderX + sliderWidth + 6, musicY, '+', {
       fontFamily: 'Arial',
-      fontSize: '18px',
-      color: '#FFFFFF'
-    });
-    musicMinus.setOrigin(0.5, 0.5);
-    musicMinus.setDepth(112);
-    musicMinus.setVisible(false);
-    musicMinus.setInteractive({ useHandCursor: true });
-    
-    // Music + button
-    const musicPlus = this.add.text(sliderX + sliderWidth + 20, musicY, '+', {
-      fontFamily: 'Arial',
-      fontSize: '18px',
-      color: '#FFFFFF'
+      fontSize: '12px',
+      color: '#000000' // Black text for white cloud
     });
     musicPlus.setOrigin(0.5, 0.5);
     musicPlus.setDepth(112);
     musicPlus.setVisible(false);
     musicPlus.setInteractive({ useHandCursor: true });
     
-    // SFX slider
-    const sfxY = panelY + 30;
-    const sfxLabel = this.add.text(panelX - panelWidth / 2 + 20, sfxY, 'Sfx', {
+    // SFX slider - positioned lower, much closer to music
+    const sfxY = panelY + 5; // Much closer to music slider (reduced from +15)
+    
+    // SFX label - positioned closer to slider, moved right, white with black outline
+    const sfxLabel = this.add.text(panelX - sliderWidth / 2 + 2, sfxY, 'Sfx', {
       fontFamily: 'Inter',
-      fontSize: '14px',
-      color: '#FFFFFF'
+      fontSize: '9px',
+      color: '#FFFFFF', // White text
+      stroke: '#000000', // Black outline
+      strokeThickness: 4 // Thick outline
     });
-    sfxLabel.setOrigin(0, 0.5);
+    sfxLabel.setOrigin(1, 0.5); // Right-aligned so it ends before the slider
     sfxLabel.setDepth(112);
     sfxLabel.setVisible(false);
     
-    // SFX slider track
-    const sfxSliderTrack = this.add.rectangle(sliderX + sliderWidth / 2, sfxY, sliderWidth, 6, 0x555555);
+    // SFX slider track - same width as music, moved right
+    const sfxSliderTrack = this.add.rectangle(panelX + 10, sfxY, sliderWidth, 3, 0x555555); // Moved 10px right
     sfxSliderTrack.setDepth(112);
     sfxSliderTrack.setVisible(false);
     sfxSliderTrack.setInteractive({ useHandCursor: true });
     
-    // SFX slider handle
+    // SFX slider handle - square, white with thick black outline
     const sfxVolume = gameScene && gameScene.audioManager ? gameScene.audioManager.sfxVolume : 0.5;
     const sfxHandleX = sliderX + (sfxVolume * sliderWidth);
-    const sfxHandle = this.add.rectangle(sfxHandleX, sfxY, 20, 20, 0x66B0FF);
+    const sfxHandle = this.add.rectangle(sfxHandleX, sfxY, 12, 12, 0xFFFFFF); // White square
+    sfxHandle.setStrokeStyle(3, 0x000000, 1); // Thick black outline
     sfxHandle.setDepth(113);
     sfxHandle.setVisible(false);
     sfxHandle.setInteractive({ useHandCursor: true });
     
-    // SFX - button
-    const sfxMinus = this.add.text(sliderX - 20, sfxY, '−', {
+    // SFX + button (minus button removed)
+    const sfxPlus = this.add.text(sliderX + sliderWidth + 6, sfxY, '+', {
       fontFamily: 'Arial',
-      fontSize: '18px',
-      color: '#FFFFFF'
-    });
-    sfxMinus.setOrigin(0.5, 0.5);
-    sfxMinus.setDepth(112);
-    sfxMinus.setVisible(false);
-    sfxMinus.setInteractive({ useHandCursor: true });
-    
-    // SFX + button
-    const sfxPlus = this.add.text(sliderX + sliderWidth + 20, sfxY, '+', {
-      fontFamily: 'Arial',
-      fontSize: '18px',
-      color: '#FFFFFF'
+      fontSize: '12px',
+      color: '#000000' // Black text for white cloud
     });
     sfxPlus.setOrigin(0.5, 0.5);
     sfxPlus.setDepth(112);
     sfxPlus.setVisible(false);
     sfxPlus.setInteractive({ useHandCursor: true });
     
-    // Mute/Unmute button
-    const muteBtn = this.add.text(panelX - 60, panelY + panelHeight / 2 - 20, 'Mute', {
-      fontFamily: 'Inter',
-      fontSize: '14px',
-      color: '#66B0FF'
-    });
-    muteBtn.setOrigin(0.5, 0.5);
-    muteBtn.setDepth(112);
-    muteBtn.setVisible(false);
-    muteBtn.setInteractive({ useHandCursor: true });
-    
-    // Exit button
-    const exitBtn = this.add.text(panelX + 60, panelY + panelHeight / 2 - 20, 'Exit', {
-      fontFamily: 'Inter',
-      fontSize: '14px',
-      color: '#66B0FF'
-    });
-    exitBtn.setOrigin(0.5, 0.5);
-    exitBtn.setDepth(112);
-    exitBtn.setVisible(false);
-    exitBtn.setInteractive({ useHandCursor: true });
-    
     // Store panel elements
     this.volumePanel = {
       bg: panelBg,
-      title: titleText,
       musicLabel,
       musicTrack: sliderTrack,
       musicHandle,
-      musicMinus,
       musicPlus,
       sfxLabel,
       sfxTrack: sfxSliderTrack,
       sfxHandle,
-      sfxMinus,
       sfxPlus,
-      mute: muteBtn,
-      exit: exitBtn,
       sliderX,
       sliderWidth,
       musicY,
@@ -1457,14 +1428,7 @@ export class UIScene extends Phaser.Scene {
       panel.musicHandle.x = panel.sliderX + (volume * panel.sliderWidth);
     });
     
-    // Music +/- buttons
-    panel.musicMinus.on('pointerdown', () => {
-      const currentVol = audioManager.musicVolume;
-      const newVol = Math.max(0, currentVol - 0.1);
-      audioManager.setMusicVolume(newVol);
-      panel.musicHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
-    });
-    
+    // Music + button
     panel.musicPlus.on('pointerdown', () => {
       const currentVol = audioManager.musicVolume;
       const newVol = Math.min(1, currentVol + 0.1);
@@ -1508,18 +1472,7 @@ export class UIScene extends Phaser.Scene {
       }
     });
     
-    // SFX +/- buttons
-    panel.sfxMinus.on('pointerdown', () => {
-      const currentVol = audioManager.sfxVolume;
-      const newVol = Math.max(0, currentVol - 0.1);
-      audioManager.setSFXVolume(newVol);
-      panel.sfxHandle.x = panel.sliderX + (newVol * panel.sliderWidth);
-      // Update typewriter sound volume if it's playing
-      if (this.typewriterSound && this.typewriterSound.isPlaying) {
-        this.typewriterSound.setVolume(newVol * 0.17); // Typewriter uses 0.17 of SFX volume
-      }
-    });
-    
+    // SFX + button
     panel.sfxPlus.on('pointerdown', () => {
       const currentVol = audioManager.sfxVolume;
       const newVol = Math.min(1, currentVol + 0.1);
@@ -1531,33 +1484,13 @@ export class UIScene extends Phaser.Scene {
       }
     });
     
-    // Mute/Unmute button
-    panel.mute.on('pointerdown', () => {
-      const isMuted = audioManager.toggleMute();
-      panel.mute.setText(isMuted ? 'Unmute' : 'Mute');
-      this.audioButton.setText(isMuted ? '🔇' : '🔊');
-    });
-    
-    // Exit button
-    panel.exit.on('pointerdown', () => {
-      this.toggleVolumePanel();
-    });
-    
     // Hover effects
-    [panel.musicMinus, panel.musicPlus, panel.sfxMinus, panel.sfxPlus, panel.mute, panel.exit].forEach(btn => {
+    [panel.musicPlus, panel.sfxPlus].forEach(btn => {
       btn.on('pointerover', () => {
-        if (btn === panel.exit || btn === panel.mute) {
-          btn.setColor('#FFFFFF');
-        } else {
-          btn.setColor('#66B0FF');
-        }
+        btn.setColor('#66B0FF'); // Blue on hover
       });
       btn.on('pointerout', () => {
-        if (btn === panel.exit || btn === panel.mute) {
-          btn.setColor('#66B0FF');
-        } else {
-          btn.setColor('#FFFFFF');
-        }
+        btn.setColor('#000000'); // Black when not hovering
       });
     });
   }
@@ -1579,16 +1512,10 @@ export class UIScene extends Phaser.Scene {
     
     // Show/hide all panel elements
     const elements = [
-      panel.bg, panel.title, panel.musicLabel, panel.musicTrack, panel.musicHandle,
-      panel.musicMinus, panel.musicPlus, panel.sfxLabel, panel.sfxTrack, panel.sfxHandle,
-      panel.sfxMinus, panel.sfxPlus, panel.mute, panel.exit
+      panel.bg, panel.musicLabel, panel.musicTrack, panel.musicHandle,
+      panel.musicPlus, panel.sfxLabel, panel.sfxTrack, panel.sfxHandle,
+      panel.sfxPlus
     ];
-    
-    // Update mute button text
-    if (gameScene && gameScene.audioManager) {
-      const isMuted = gameScene.audioManager.isMuted;
-      panel.mute.setText(isMuted ? 'Unmute' : 'Mute');
-    }
     
     elements.forEach(element => {
       element.setVisible(this.volumePanelVisible);

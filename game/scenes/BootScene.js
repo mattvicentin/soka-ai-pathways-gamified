@@ -35,6 +35,9 @@ export class BootScene extends Phaser.Scene {
     // Load typewriter sprite
     this.load.image('typewriter', 'assets/sprites/typewriter.png');
     
+    // Load cloud sprite for volume panel
+    this.load.image('cloud', 'assets/sprites/cloud.png');
+    
     // Load audio files - errors are handled gracefully so game continues if files fail
     this.loadAudioAssets();
   }

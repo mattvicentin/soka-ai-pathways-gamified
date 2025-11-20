@@ -148,8 +148,8 @@ export class GameScene extends Phaser.Scene {
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    // Position sprite to the left (25% from left edge)
-    const spriteX = width * 0.25;
+    // Position sprite between cloud (left) and typewriter (right) - at 32% from left
+    const spriteX = width * 0.32;
     
     // Position sprite so only bottom half is visible, moved up a bit
     // Sprite is 1024x1024, scaled to 0.48 = ~492x492 pixels (20% larger than 0.4)
