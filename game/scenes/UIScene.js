@@ -27,6 +27,9 @@ export class UIScene extends Phaser.Scene {
     // Volume control panel
     this.volumePanel = null;
     this.volumePanelVisible = false;
+    // Typewriter cursor
+    this.typewriterCursor = null;
+    this.cursorBlinkTimer = null;
   }
 
   create() {
@@ -147,6 +150,26 @@ export class UIScene extends Phaser.Scene {
     
     // Apply mask to narrative text to ensure it stays within box
     this.narrativeText.setMask(new Phaser.Display.Masks.GeometryMask(this, this.textMask));
+    
+    // Typewriter cursor - blinking indicator at end of text
+    this.typewriterCursor = this.add.text(0, 0, '|', {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      color: '#FFFFFF'
+    });
+    this.typewriterCursor.setOrigin(0, 0);
+    this.typewriterCursor.setDepth(102); // Above narrative text
+    this.typewriterCursor.setVisible(false);
+    
+    // Make cursor blink
+    this.tweens.add({
+      targets: this.typewriterCursor,
+      alpha: { from: 1, to: 0 },
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
     
     // "Click to continue" indicator - at bottom right of dialogue box (above continue button area)
     this.continueIndicator = this.add.text(
@@ -400,6 +423,11 @@ export class UIScene extends Phaser.Scene {
       this.typewriterTimer = null;
     }
     
+    // Hide cursor
+    if (this.typewriterCursor) {
+      this.typewriterCursor.setVisible(false);
+    }
+    
     // Stop typewriter sound
     if (this.typewriterSound) {
       const gameScene = this.scene.get('GameScene');
@@ -444,6 +472,12 @@ export class UIScene extends Phaser.Scene {
     // Clear existing text
     this.narrativeText.setText('');
     
+    // Show cursor
+    if (this.typewriterCursor) {
+      this.typewriterCursor.setVisible(true);
+      this.updateCursorPosition();
+    }
+    
     // Type character by character
     this.typewriterTimer = this.time.addEvent({
       delay: 16, // ms per character (20% faster: 20 * 0.8 = 16)
@@ -457,6 +491,9 @@ export class UIScene extends Phaser.Scene {
           this.displayedText += this.fullText[this.charIndex];
           this.narrativeText.setText(this.displayedText);
           this.charIndex++;
+          
+          // Update cursor position
+          this.updateCursorPosition();
           
           // Play text sound (if available) - only on first character to start looping sound
           const gameScene = this.scene.get('GameScene');
@@ -472,6 +509,61 @@ export class UIScene extends Phaser.Scene {
       },
       loop: true
     });
+  }
+
+  updateCursorPosition() {
+    if (!this.typewriterCursor || !this.narrativeText || !this.displayedText) return;
+    
+    // Get word wrap width safely - calculate from dialogue box dimensions
+    const width = this.cameras.main.width;
+    const dialogueBoxLeft = 20;
+    const dialogueBoxRight = width - 20;
+    const textPadding = 20;
+    const maxTextWidth = dialogueBoxRight - dialogueBoxLeft - (textPadding * 2);
+    
+    // Get word wrap width from text style, or use calculated maxTextWidth as fallback
+    let wordWrapWidth = maxTextWidth;
+    try {
+      if (this.narrativeText.style && this.narrativeText.style.wordWrap && this.narrativeText.style.wordWrap.width) {
+        wordWrapWidth = this.narrativeText.style.wordWrap.width;
+      }
+    } catch (e) {
+      // Use fallback if style access fails
+      wordWrapWidth = maxTextWidth;
+    }
+    
+    // Create a temporary text object with the same style to measure text dimensions
+    const tempText = this.add.text(0, 0, this.displayedText, {
+      fontFamily: 'Inter',
+      fontSize: '14px',
+      wordWrap: { width: wordWrapWidth },
+      lineSpacing: 4
+    });
+    
+    // Get the text dimensions
+    const textWidth = tempText.width;
+    const textHeight = tempText.height;
+    
+    // For wrapped text, find the last line
+    const lines = this.displayedText.split('\n');
+    const lastLine = lines[lines.length - 1] || '';
+    
+    // Measure just the last line to get its width
+    const lastLineText = this.add.text(0, 0, lastLine, {
+      fontFamily: 'Inter',
+      fontSize: '14px'
+    });
+    const lastLineWidth = lastLineText.width;
+    lastLineText.destroy();
+    tempText.destroy();
+    
+    // Position cursor at the end of the last line
+    this.typewriterCursor.x = this.narrativeText.x + lastLineWidth;
+    // Y position: start of narrative text + height of all text minus one line height
+    // Since text wraps, we need to calculate based on number of lines
+    const lineHeight = 14 + 4; // fontSize + lineSpacing
+    const numLines = lines.length;
+    this.typewriterCursor.y = this.narrativeText.y + (numLines - 1) * lineHeight;
   }
 
   skipTypewriter() {
@@ -502,6 +594,11 @@ export class UIScene extends Phaser.Scene {
     if (this.typewriterTimer) {
       this.typewriterTimer.destroy();
       this.typewriterTimer = null;
+    }
+    
+    // Hide cursor
+    if (this.typewriterCursor) {
+      this.typewriterCursor.setVisible(false);
     }
     
     // Stop typewriter sound
@@ -653,6 +750,12 @@ export class UIScene extends Phaser.Scene {
       // Clear existing text
       this.narrativeText.setText('');
       
+      // Show cursor
+      if (this.typewriterCursor) {
+        this.typewriterCursor.setVisible(true);
+        this.updateCursorPosition();
+      }
+      
       // Type character by character
       this.typewriterTimer = this.time.addEvent({
         delay: 16, // ms per character (20% faster: 20 * 0.8 = 16)
@@ -666,6 +769,9 @@ export class UIScene extends Phaser.Scene {
             this.displayedText += this.fullText[this.charIndex];
             this.narrativeText.setText(this.displayedText);
             this.charIndex++;
+            
+            // Update cursor position
+            this.updateCursorPosition();
             
             // Play text sound (if available) - only on first character to start looping sound
             const gameScene = this.scene.get('GameScene');
