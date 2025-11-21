@@ -72,6 +72,7 @@ export class BootScene extends Phaser.Scene {
     }
   }
 
+  
 
   loadAudioAssets() {
     // Load audio files - game will work without them if files don't exist

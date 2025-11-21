@@ -1217,42 +1217,44 @@ export class UIScene extends Phaser.Scene {
     overlay.setDepth(200);
     overlay.setInteractive();
     
-    // Modal box
-    const modalBox = this.add.rectangle(width / 2, height / 2, width - 100, height - 100, 0xFFFFFF, 1);
-    modalBox.setStrokeStyle(4, 0x0048B7);
+    // Modal box - light brown background with black border
+    const modalBox = this.add.rectangle(width / 2, height / 2, width - 100, height - 100, 0xD4A574, 1);
+    modalBox.setStrokeStyle(4, 0x000000, 1);
     modalBox.setDepth(201);
     
-    // Modal title
+    // Modal title - black text without outline
     const modalTitle = this.add.text(
-      60,
+      width / 2,
       60,
       'Resources for this section',
       {
         fontFamily: 'Inter',
         fontSize: '20px',
         fontStyle: 'bold',
-        color: '#0048B7'
+        color: '#000000'
       }
     );
+    modalTitle.setOrigin(0.5, 0);
     modalTitle.setDepth(202);
     
-    // Resources list
-    let resourcesHTML = '';
+    // Resources list - black text without outline
     this.currentNode.resources.forEach((resource, index) => {
       const y = 110 + index * 60;
       
       const resourceText = this.add.text(
-        60,
+        width / 2,
         y,
         `${index + 1}. ${resource.label}`,
         {
           fontFamily: 'Inter',
           fontSize: '14px',
           fontStyle: 'bold',
-          color: '#0048B7',
-          wordWrap: { width: width - 140 }
+          color: '#000000',
+          wordWrap: { width: width - 140 },
+          align: 'center'
         }
       );
+      resourceText.setOrigin(0.5, 0);
       resourceText.setDepth(202);
       resourceText.setInteractive({ useHandCursor: true });
       resourceText.on('pointerdown', () => {
@@ -1262,22 +1264,24 @@ export class UIScene extends Phaser.Scene {
       
       if (resource.why) {
         const whyText = this.add.text(
-          60,
+          width / 2,
           y + 20,
           resource.why,
           {
             fontFamily: 'Inter',
             fontSize: '12px',
-            color: '#666666',
-            wordWrap: { width: width - 140 }
+            color: '#2C1810', // Dark brown for readability on light brown
+            wordWrap: { width: width - 140 },
+            align: 'center'
           }
         );
+        whyText.setOrigin(0.5, 0);
         whyText.setDepth(202);
         this.choiceButtons.push({ button: whyText, text: null });
       }
     });
     
-    // Close button
+    // Close button - black background with white text
     const closeBtn = this.add.text(
       width / 2,
       height - 80,
@@ -1286,7 +1290,7 @@ export class UIScene extends Phaser.Scene {
         fontFamily: 'Inter',
         fontSize: '16px',
         color: '#FFFFFF',
-        backgroundColor: '#0048B7',
+        backgroundColor: '#000000',
         padding: { x: 20, y: 10 }
       }
     );
@@ -1302,6 +1306,8 @@ export class UIScene extends Phaser.Scene {
       this.clearChoices();
       this.showChoices();
     });
+    closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#333333'));
+    closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#000000'));
     
     this.choiceButtons.push({ button: overlay, text: null });
     this.choiceButtons.push({ button: modalBox, text: null });
