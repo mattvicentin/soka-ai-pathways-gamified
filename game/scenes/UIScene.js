@@ -30,6 +30,11 @@ export class UIScene extends Phaser.Scene {
     // Typewriter cursor
     this.typewriterCursor = null;
     this.cursorBlinkTimer = null;
+    // Reflection modal
+    this.shouldShowReflection = false;
+    this.reflectionOverlay = null;
+    // Resources modal
+    this.resourcesOverlay = null;
   }
 
   create() {
@@ -353,8 +358,20 @@ export class UIScene extends Phaser.Scene {
     // Clear narrative text
     this.narrativeText.setText('');
     
-    // Start typewriter effect for narrative
-    this.startTypewriter(node.narrative);
+    // If this is R1, show reflection modal immediately (before typewriter)
+    if (node.id === 'R1') {
+      this.shouldShowReflection = true;
+      // Show modal immediately, don't wait for typewriter
+      this.time.delayedCall(100, () => {
+        this.showReflectionModal();
+      });
+      // Still show the narrative text, but modal will be on top
+      this.startTypewriter(node.narrative);
+    } else {
+      this.shouldShowReflection = false;
+      // Start typewriter effect for narrative
+      this.startTypewriter(node.narrative);
+    }
   }
 
   splitTextIntoPages(text) {
@@ -632,9 +649,16 @@ export class UIScene extends Phaser.Scene {
       }
       
       // Show choices after a brief delay - only if we're still on the same node
+      // Don't show choices for R1 if reflection modal is open
       this.showChoicesTimer = this.time.delayedCall(300, () => {
-        // Double-check we're still on the same node before showing choices
+        // Don't show choices for R1 if reflection modal is open
+        if (this.currentNode && this.currentNode.id === 'R1' && this.reflectionOverlay) {
+          console.log('Skipping choices for R1 - reflection modal is open');
+          return;
+        }
+        
         if (this.currentNode && this.currentNode.choices && this.currentNode.choices.length > 0) {
+          // Double-check we're still on the same node before showing choices
           this.showChoices();
         }
         this.showChoicesTimer = null;
@@ -797,6 +821,11 @@ export class UIScene extends Phaser.Scene {
   showChoices() {
     // CRITICAL: Only show choices if typewriter has finished and we're not typing
     if (!this.currentNode || !this.currentNode.choices || this.isTyping) {
+      return;
+    }
+    
+    // Don't show choices if reflection modal is open (for R1 node)
+    if (this.currentNode.id === 'R1' && this.reflectionOverlay) {
       return;
     }
     
@@ -1208,111 +1237,472 @@ export class UIScene extends Phaser.Scene {
   }
 
   showResourcesModal() {
-    // Create a modal overlay showing resources
+    // Don't show if already open
+    if (this.resourcesOverlay) {
+      return;
+    }
+    
+    // Create DOM overlay for resources modal (matching reflection modal design)
     const width = this.cameras.main.width;
     const height = this.cameras.main.height;
     
-    // Overlay
-    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.8);
-    overlay.setDepth(200);
-    overlay.setInteractive();
-    
-    // Modal box - light brown background with black border
-    const modalBox = this.add.rectangle(width / 2, height / 2, width - 100, height - 100, 0xD4A574, 1);
-    modalBox.setStrokeStyle(4, 0x000000, 1);
-    modalBox.setDepth(201);
-    
-    // Modal title - black text without outline
-    const modalTitle = this.add.text(
-      width / 2,
-      60,
-      'Resources for this section',
-      {
-        fontFamily: 'Inter',
-        fontSize: '20px',
-        fontStyle: 'bold',
-        color: '#000000'
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'resources-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
+    // Prevent clicks from passing through to the game
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        // Only close if clicking directly on overlay, not on modal
+        this.closeResourcesModal();
       }
-    );
-    modalTitle.setOrigin(0.5, 0);
-    modalTitle.setDepth(202);
+    };
     
-    // Resources list - black text without outline
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'resources-modal';
+    modal.style.cssText = `
+      background: #D4A574;
+      border: 4px solid #000000;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: ${width - 100}px;
+      max-height: ${height - 100}px;
+      width: 90%;
+      overflow-y: auto;
+      position: relative;
+    `;
+    
+    // Prevent clicks on modal from closing it
+    modal.onclick = (e) => {
+      e.stopPropagation();
+    };
+    
+    // Title
+    const title = document.createElement('h2');
+    title.textContent = 'Resources for this section';
+    title.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #000000;
+      margin-bottom: 20px;
+      text-align: center;
+    `;
+    
+    // Resources list container
+    const resourcesList = document.createElement('div');
+    resourcesList.style.cssText = 'display: flex; flex-direction: column; gap: 20px;';
+    
+    // Resources list
     this.currentNode.resources.forEach((resource, index) => {
-      const y = 110 + index * 60;
+      const resourceItem = document.createElement('div');
+      resourceItem.style.cssText = 'display: flex; flex-direction: column; gap: 8px;';
       
-      const resourceText = this.add.text(
-        width / 2,
-        y,
-        `${index + 1}. ${resource.label}`,
-        {
-          fontFamily: 'Inter',
-          fontSize: '14px',
-          fontStyle: 'bold',
-          color: '#000000',
-          wordWrap: { width: width - 140 },
-          align: 'center'
-        }
-      );
-      resourceText.setOrigin(0.5, 0);
-      resourceText.setDepth(202);
-      resourceText.setInteractive({ useHandCursor: true });
-      resourceText.on('pointerdown', () => {
-        window.open(resource.url, '_blank');
-      });
-      this.choiceButtons.push({ button: resourceText, text: null });
+      // Resource label (clickable link)
+      const resourceLink = document.createElement('a');
+      resourceLink.href = resource.url;
+      resourceLink.target = '_blank';
+      resourceLink.textContent = `${index + 1}. ${resource.label}`;
+      resourceLink.style.cssText = `
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        color: #000000;
+        text-decoration: none;
+        cursor: pointer;
+        word-wrap: break-word;
+      `;
+      resourceLink.onmouseover = () => resourceLink.style.textDecoration = 'underline';
+      resourceLink.onmouseout = () => resourceLink.style.textDecoration = 'none';
       
+      resourceItem.appendChild(resourceLink);
+      
+      // Resource description (if exists)
       if (resource.why) {
-        const whyText = this.add.text(
-          width / 2,
-          y + 20,
-          resource.why,
-          {
-            fontFamily: 'Inter',
-            fontSize: '12px',
-            color: '#2C1810', // Dark brown for readability on light brown
-            wordWrap: { width: width - 140 },
-            align: 'center'
+        const whyText = document.createElement('p');
+        whyText.textContent = resource.why;
+        whyText.style.cssText = `
+          font-family: 'Inter', sans-serif;
+          font-size: 12px;
+          color: #2C1810;
+          margin: 0;
+          word-wrap: break-word;
+        `;
+        resourceItem.appendChild(whyText);
+      }
+      
+      resourcesList.appendChild(resourceItem);
+    });
+    
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      font-size: 30px;
+      color: #000000;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      line-height: 30px;
+      padding: 0;
+    `;
+    closeBtn.onclick = () => this.closeResourcesModal();
+    
+    // Assemble modal
+    modal.appendChild(closeBtn);
+    modal.appendChild(title);
+    modal.appendChild(resourcesList);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Store reference for cleanup
+    this.resourcesOverlay = overlay;
+  }
+
+  closeResourcesModal() {
+    if (this.resourcesOverlay) {
+      this.resourcesOverlay.remove();
+      this.resourcesOverlay = null;
+    }
+  }
+
+  showReflectionModal() {
+    console.log('showReflectionModal called');
+    // Don't show if already open
+    if (this.reflectionOverlay) {
+      console.log('Reflection modal already open');
+      return;
+    }
+    
+    // Create DOM overlay for reflection form (Phaser doesn't have native text inputs)
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
+    
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'reflection-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
+    // Prevent clicks from passing through to the game
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        // Only close if clicking directly on overlay, not on modal
+        this.closeReflectionModal();
+      }
+    };
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'reflection-modal';
+    modal.style.cssText = `
+      background: #D4A574;
+      border: 4px solid #000000;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: ${width - 100}px;
+      max-height: ${height - 100}px;
+      width: 90%;
+      overflow-y: auto;
+      position: relative;
+    `;
+    
+    // Title
+    const title = document.createElement('h2');
+    title.textContent = '📝 Share Your Reflection (Optional)';
+    title.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #000000;
+      margin-bottom: 10px;
+      text-align: center;
+    `;
+    
+    // Description
+    const description = document.createElement('p');
+    description.textContent = 'Help us improve this application by sharing your insights. Your response will be sent to the organizers.';
+    description.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #2C1810;
+      margin-bottom: 20px;
+      text-align: center;
+    `;
+    
+    // Form container
+    const form = document.createElement('div');
+    form.id = 'reflection-form';
+    form.style.cssText = 'display: flex; flex-direction: column; gap: 15px;';
+    
+    // Question 1: What did you protect?
+    const q1Container = this.createQuestionField('protected', 'What did you protect?', 'e.g., Academic integrity, student trust...');
+    form.appendChild(q1Container);
+    
+    // Question 2: What did you risk?
+    const q2Container = this.createQuestionField('risked', 'What did you risk?', 'e.g., Student engagement, workload...');
+    form.appendChild(q2Container);
+    
+    // Question 3: What did you learn?
+    const q3Container = this.createQuestionField('learned', 'What did you learn?', 'e.g., The importance of dialogue...');
+    form.appendChild(q3Container);
+    
+    // Question 4: What is one concrete next step?
+    const q4Container = this.createQuestionField('nextStep', 'What is one concrete next step?', 'e.g., Add AI literacy unit to my syllabus...');
+    form.appendChild(q4Container);
+    
+    // Send button
+    const sendBtn = document.createElement('button');
+    sendBtn.textContent = 'Send';
+    sendBtn.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #FFFFFF;
+      background: #000000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+      align-self: center;
+      min-width: 120px;
+    `;
+    sendBtn.onmouseover = () => sendBtn.style.background = '#333333';
+    sendBtn.onmouseout = () => sendBtn.style.background = '#000000';
+    sendBtn.onclick = () => this.submitReflection();
+    
+    // Close button
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = `
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: transparent;
+      border: none;
+      font-size: 30px;
+      color: #000000;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      line-height: 30px;
+      padding: 0;
+    `;
+    closeBtn.onclick = () => this.closeReflectionModal();
+    
+    // Thank you message (hidden initially)
+    const thanksDiv = document.createElement('div');
+    thanksDiv.id = 'reflection-thanks';
+    thanksDiv.style.cssText = 'display: none; text-align: center; padding: 20px;';
+    thanksDiv.innerHTML = `
+      <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
+      <h3 style="font-family: 'Inter', sans-serif; font-size: 22px; font-weight: bold; color: #000000; margin-bottom: 10px;">Thank You!</h3>
+      <p style="font-family: 'Inter', sans-serif; font-size: 14px; color: #2C1810;">Your reflection has been sent.</p>
+    `;
+    
+    // Assemble modal
+    modal.appendChild(closeBtn);
+    modal.appendChild(title);
+    modal.appendChild(description);
+    modal.appendChild(form);
+    modal.appendChild(sendBtn);
+    modal.appendChild(thanksDiv);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Prevent clicks on modal from closing it
+    modal.onclick = (e) => {
+      e.stopPropagation();
+    };
+    
+    // Store reference for cleanup
+    this.reflectionOverlay = overlay;
+    
+    console.log('Reflection modal created and displayed');
+  }
+
+  createQuestionField(id, label, placeholder) {
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
+    
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      color: #000000;
+    `;
+    
+    const textarea = document.createElement('textarea');
+    textarea.id = id;
+    textarea.placeholder = placeholder;
+    textarea.rows = 3;
+    textarea.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #000000;
+      background: #F5E6D3;
+      border: 2px solid #000000;
+      border-radius: 4px;
+      padding: 10px;
+      resize: vertical;
+      width: 100%;
+      box-sizing: border-box;
+    `;
+    
+    container.appendChild(labelEl);
+    container.appendChild(textarea);
+    return container;
+  }
+
+  async submitReflection() {
+    const protectedVal = document.getElementById('protected')?.value || '';
+    const riskedVal = document.getElementById('risked')?.value || '';
+    const learnedVal = document.getElementById('learned')?.value || '';
+    const nextStepVal = document.getElementById('nextStep')?.value || '';
+    
+    // At least one field must be filled
+    if (!protectedVal && !riskedVal && !learnedVal && !nextStepVal) {
+      alert('Please fill in at least one reflection field.');
+      return;
+    }
+    
+    const form = document.getElementById('reflection-form');
+    const sendBtn = form?.nextElementSibling;
+    const thanksDiv = document.getElementById('reflection-thanks');
+    
+    // Disable button during submission
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+    }
+    
+    try {
+      // Build email body
+      let emailBody = 'AI Pathway Feedback\n\n';
+      if (protectedVal) emailBody += `What did you protect?\n${protectedVal}\n\n`;
+      if (riskedVal) emailBody += `What did you risk?\n${riskedVal}\n\n`;
+      if (learnedVal) emailBody += `What did you learn?\n${learnedVal}\n\n`;
+      if (nextStepVal) emailBody += `What is one concrete next step?\n${nextStepVal}\n\n`;
+      
+      // Use EmailJS to send email automatically
+      // Configuration: EmailJS service credentials
+      const serviceId = 'service_hey9rxt';
+      const templateId = 'template_kfsb8bd';
+      const publicKey = 'rDOH3OJhKhBAJ5tt5';
+      
+      // Check if EmailJS is configured and available
+      if (typeof emailjs !== 'undefined' && serviceId !== 'YOUR_SERVICE_ID') {
+        try {
+          // Initialize EmailJS (only needs to be done once, but safe to call multiple times)
+          if (!emailjs.init) {
+            console.error('EmailJS library not loaded correctly');
+            throw new Error('EmailJS library not available');
           }
-        );
-        whyText.setOrigin(0.5, 0);
-        whyText.setDepth(202);
-        this.choiceButtons.push({ button: whyText, text: null });
+          
+          emailjs.init(publicKey);
+          
+          console.log('Sending email via EmailJS with:', { serviceId, templateId });
+          
+          // Send email using EmailJS
+          const response = await emailjs.send(serviceId, templateId, {
+            from_email: 'mvicentin@soka.edu',
+            to_email: 'iread@soka.edu',
+            to_email_cc: 'mvicentin@soka.edu',
+            subject: 'AI Pathway Feedback',
+            message: emailBody,
+            protected: protectedVal || '(not provided)',
+            risked: riskedVal || '(not provided)',
+            learned: learnedVal || '(not provided)',
+            next_step: nextStepVal || '(not provided)'
+          });
+          
+            console.log('Reflection email sent successfully via EmailJS', response);
+        } catch (emailError) {
+          console.error('EmailJS error details:', emailError);
+          // If template ID error, provide helpful message
+          if (emailError.text && emailError.text.includes('template ID not found')) {
+            alert('Email template not found. Please verify the template ID in EmailJS dashboard and update the code.');
+          } else {
+            alert(`Error sending email: ${emailError.text || emailError.message}. Please check your EmailJS configuration.`);
+          }
+          throw emailError; // Re-throw to be caught by outer catch
+        }
+      } else {
+        // Fallback: Use mailto if EmailJS is not configured
+        console.warn('EmailJS not configured, using mailto fallback');
+        const subject = encodeURIComponent('AI Pathway Feedback');
+        const body = encodeURIComponent(emailBody);
+        window.location.href = `mailto:iread@soka.edu,mvicentin@soka.edu?subject=${subject}&body=${body}`;
+        
+        // Re-enable button since mailto opens email client
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send';
+        }
+        return;
       }
-    });
-    
-    // Close button - black background with white text
-    const closeBtn = this.add.text(
-      width / 2,
-      height - 80,
-      'Close',
-      {
-        fontFamily: 'Inter',
-        fontSize: '16px',
-        color: '#FFFFFF',
-        backgroundColor: '#000000',
-        padding: { x: 20, y: 10 }
+      
+      // Show thank you message
+      if (form) form.style.display = 'none';
+      if (sendBtn) sendBtn.style.display = 'none';
+      if (thanksDiv) thanksDiv.style.display = 'block';
+      
+      // Auto-close after 3 seconds
+      setTimeout(() => {
+        this.closeReflectionModal();
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error sending reflection email:', error);
+      alert('There was an error sending your reflection. Please try again.');
+      
+      // Re-enable button
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
       }
-    );
-    closeBtn.setOrigin(0.5);
-    closeBtn.setDepth(202);
-    closeBtn.setInteractive({ useHandCursor: true });
-    closeBtn.on('pointerdown', () => {
-      overlay.destroy();
-      modalBox.destroy();
-      modalTitle.destroy();
-      closeBtn.destroy();
-      // Clean up resource texts
-      this.clearChoices();
+    }
+  }
+
+  closeReflectionModal() {
+    console.log('closeReflectionModal called');
+    if (this.reflectionOverlay) {
+      this.reflectionOverlay.remove();
+      this.reflectionOverlay = null;
+    }
+    // Show choices after closing reflection modal
+    if (this.currentNode && this.currentNode.choices && this.currentNode.choices.length > 0) {
       this.showChoices();
-    });
-    closeBtn.on('pointerover', () => closeBtn.setBackgroundColor('#333333'));
-    closeBtn.on('pointerout', () => closeBtn.setBackgroundColor('#000000'));
-    
-    this.choiceButtons.push({ button: overlay, text: null });
-    this.choiceButtons.push({ button: modalBox, text: null });
-    this.choiceButtons.push({ button: modalTitle, text: null });
-    this.choiceButtons.push({ button: closeBtn, text: null });
+    }
   }
 
   clearChoices() {
