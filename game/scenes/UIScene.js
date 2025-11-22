@@ -86,8 +86,8 @@ export class UIScene extends Phaser.Scene {
     
     // Title text - centered at top, black with white outline
     this.titleText = this.add.text(width / 2, titleY, '', {
-      fontFamily: 'Inter',
-      fontSize: '16px', // Reduced by 2 points (from 18px)
+      fontFamily: '"VT323", monospace',
+      fontSize: '24px', // Increased for better readability
       fontStyle: 'bold',
       color: '#000000',
       stroke: '#FFFFFF',
@@ -127,8 +127,8 @@ export class UIScene extends Phaser.Scene {
       dialogueBoxTop + textPadding, 
       '', 
       {
-        fontFamily: 'Inter',
-        fontSize: '14px',
+        fontFamily: '"VT323", monospace',
+        fontSize: '22px', // Increased for better readability
         color: '#FFFFFF',
         lineSpacing: 4,
         wordWrap: { 
@@ -158,8 +158,8 @@ export class UIScene extends Phaser.Scene {
     
     // Typewriter cursor - blinking indicator at end of text
     this.typewriterCursor = this.add.text(0, 0, '|', {
-      fontFamily: 'Inter',
-      fontSize: '14px',
+      fontFamily: '"VT323", monospace',
+      fontSize: '22px', // Increased to match narrative text
       color: '#FFFFFF'
     });
     this.typewriterCursor.setOrigin(0, 0);
@@ -231,8 +231,8 @@ export class UIScene extends Phaser.Scene {
       height - padding - 20,
       '↻ Restart',
       {
-        fontFamily: 'Inter',
-        fontSize: '10px', // 30% smaller (14px * 0.7 ≈ 10px)
+        fontFamily: '"VT323", monospace',
+        fontSize: '16px', // Increased for better readability
         color: '#FFFFFF',
         backgroundColor: '#333333',
         padding: { x: 7, y: 4 } // Also reduce padding
@@ -387,8 +387,8 @@ export class UIScene extends Phaser.Scene {
     
     // Create a temporary text object to measure text dimensions
     const tempText = this.add.text(0, 0, '', {
-      fontFamily: 'Inter',
-      fontSize: '14px',
+      fontFamily: '"VT323", monospace',
+      fontSize: '22px', // Match narrative text size
       wordWrap: { width: maxTextWidth },
       lineSpacing: 4
     });
@@ -551,8 +551,8 @@ export class UIScene extends Phaser.Scene {
     
     // Create a temporary text object with the same style to measure text dimensions
     const tempText = this.add.text(0, 0, this.displayedText, {
-      fontFamily: 'Inter',
-      fontSize: '14px',
+      fontFamily: '"VT323", monospace',
+      fontSize: '22px', // Match narrative text size
       wordWrap: { width: wordWrapWidth },
       lineSpacing: 4
     });
@@ -567,8 +567,8 @@ export class UIScene extends Phaser.Scene {
     
     // Measure just the last line to get its width
     const lastLineText = this.add.text(0, 0, lastLine, {
-      fontFamily: 'Inter',
-      fontSize: '14px'
+      fontFamily: '"VT323", monospace',
+      fontSize: '22px' // Match narrative text size
     });
     const lastLineWidth = lastLineText.width;
     lastLineText.destroy();
@@ -707,8 +707,8 @@ export class UIScene extends Phaser.Scene {
       buttonY,
       'Continue →',
       {
-        fontFamily: 'Inter',
-        fontSize: '12px',
+        fontFamily: '"VT323", monospace',
+        fontSize: '18px', // Increased for better readability
         color: '#FFFFFF',
         align: 'center'
       }
@@ -957,7 +957,7 @@ export class UIScene extends Phaser.Scene {
             const labelLength = label.length;
             const testHeader = `- ${label} -`;
             const tempText = this.add.text(0, 0, testHeader, {
-              font: 'bold 13px "Special Elite", "Courier New", monospace',
+              font: 'bold 24px "VT323", monospace',
               wordWrap: { width: maxTextWidth, useAdvancedWrap: true }
             });
             const headerWidth = tempText.width;
@@ -1053,12 +1053,12 @@ export class UIScene extends Phaser.Scene {
         headerY,
         headerText,
         {
-          font: 'bold 13px "Special Elite", "Courier New", monospace', // Reduced from 14px to ensure fit
+          font: 'bold 24px "VT323", monospace', // Larger size for headers to stand out
           color: '#000000', // Darker black for bold appearance
           align: 'center',
           wordWrap: { width: maxTextWidth, useAdvancedWrap: true },
-          stroke: '#000000', // Add stroke for bolder appearance
-          strokeThickness: 0.5
+          stroke: '#FFFFFF', // White stroke for better contrast and readability
+          strokeThickness: 3 // Thicker white stroke for bold effect and readability
         }
       );
       headerTextObj.setOrigin(0.5, 0.5);
@@ -1075,8 +1075,8 @@ export class UIScene extends Phaser.Scene {
           y + 8, // Position slightly below center for the description
           secondPart,
           {
-            fontFamily: '"Special Elite", "Courier New", monospace',
-            fontSize: '12px', // Reduced from 13px to ensure fit within paper borders
+            fontFamily: '"VT323", monospace',
+            fontSize: '18px', // Increased for better readability
             color: '#1a1a1a',
             align: 'center',
             wordWrap: { width: maxTextWidth, useAdvancedWrap: true }
@@ -1208,7 +1208,7 @@ export class UIScene extends Phaser.Scene {
       buttonY,
       '📚 Resources',
       {
-        fontFamily: 'Inter',
+        fontFamily: '"VT323", monospace',
         fontSize: '12px',
         color: '#FFFFFF',
         fontStyle: 'bold'
@@ -1676,9 +1676,11 @@ export class UIScene extends Phaser.Scene {
       if (sendBtn) sendBtn.style.display = 'none';
       if (thanksDiv) thanksDiv.style.display = 'block';
       
-      // Auto-close after 3 seconds
+      // Auto-close after 3 seconds, then show credits
       setTimeout(() => {
         this.closeReflectionModal();
+        // Show credits scene after closing modal
+        this.showCreditsScene();
       }, 3000);
       
     } catch (error) {
@@ -1752,8 +1754,13 @@ export class UIScene extends Phaser.Scene {
     // Clear choices
     this.clearChoices();
     
-    // Tell GameScene to change node
-    gameScene.events.emit('changeNode', nextNodeId);
+    // If the choice is to restart (go to D1), show credits scene instead
+    if (nextNodeId === 'D1') {
+      this.showCreditsScene();
+    } else {
+      // Tell GameScene to change node
+      gameScene.events.emit('changeNode', nextNodeId);
+    }
   }
 
   createVolumePanel(width, height, padding) {
@@ -1797,7 +1804,7 @@ export class UIScene extends Phaser.Scene {
     
     // Music label - positioned closer to slider, moved right, white with black outline
     const musicLabel = this.add.text(panelX - sliderWidth / 2 + 2, musicY, 'Music', {
-      fontFamily: 'Inter',
+      fontFamily: '"VT323", monospace',
       fontSize: '9px',
       color: '#FFFFFF', // White text
       stroke: '#000000', // Black outline
@@ -1838,7 +1845,7 @@ export class UIScene extends Phaser.Scene {
     
     // SFX label - positioned closer to slider, moved right, white with black outline
     const sfxLabel = this.add.text(panelX - sliderWidth / 2 + 2, sfxY, 'Sfx', {
-      fontFamily: 'Inter',
+      fontFamily: '"VT323", monospace',
       fontSize: '9px',
       color: '#FFFFFF', // White text
       stroke: '#000000', // Black outline
@@ -2033,15 +2040,25 @@ export class UIScene extends Phaser.Scene {
   restart() {
     console.log('Restarting game...');
     
-    // Reset node manager
-    this.nodeManager.restart();
+    // Show credits scene instead of directly restarting
+    this.showCreditsScene();
+  }
+  
+  showCreditsScene() {
+    // Use camera fade to smoothly transition to black
+    const gameScene = this.scene.get('GameScene');
     
-    // Clear URL hash
-    window.location.hash = '';
+    // Fade out both scenes simultaneously
+    if (gameScene) {
+      gameScene.cameras.main.fadeOut(1000, 0, 0, 0);
+    }
+    this.cameras.main.fadeOut(1000, 0, 0, 0);
     
-    // Reload the game scene
-    this.scene.restart();
-    this.scene.get('GameScene').scene.restart();
+    // When fade completes, start credits scene
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      console.log('Fade to black complete, starting credits scene');
+      this.scene.start('CreditsScene');
+    });
   }
 }
 

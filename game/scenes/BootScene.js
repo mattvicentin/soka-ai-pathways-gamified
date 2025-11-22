@@ -38,6 +38,9 @@ export class BootScene extends Phaser.Scene {
     // Load cloud sprite for volume panel
     this.load.image('cloud', 'assets/sprites/cloud.png');
     
+    // Load heart sprite for credits scene
+    this.load.image('heart', 'assets/sprites/heart.png');
+    
     // Load audio files - errors are handled gracefully so game continues if files fail
     this.loadAudioAssets();
   }

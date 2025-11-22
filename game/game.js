@@ -5,6 +5,7 @@
 import { BootScene } from './scenes/BootScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { UIScene } from './scenes/UIScene.js';
+import { CreditsScene } from './scenes/CreditsScene.js';
 
 // Phaser game configuration
 const config = {
@@ -17,7 +18,7 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
-  scene: [BootScene, GameScene, UIScene],
+  scene: [BootScene, GameScene, UIScene, CreditsScene],
   pixelArt: false, // Set to true if using actual pixel art sprites
   physics: {
     default: 'arcade',
