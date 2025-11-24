@@ -365,12 +365,20 @@ export class BootScene extends Phaser.Scene {
     
     // Close modal and start game
     this.closeCustomizationModal();
+    
+    // Unlock audio before starting GameScene (user clicked Continue, so this counts as user interaction)
+    this.registry.set('audioUnlocked', true);
+    
     this.scene.start('GameScene');
   }
 
   skipCustomization() {
     // Close modal and start game with default config
     this.closeCustomizationModal();
+    
+    // Unlock audio before starting GameScene (user clicked Skip, so this counts as user interaction)
+    this.registry.set('audioUnlocked', true);
+    
     this.scene.start('GameScene');
   }
 

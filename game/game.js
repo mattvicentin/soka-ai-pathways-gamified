@@ -18,6 +18,9 @@ const config = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
+  loader: {
+    baseURL: './'  // Ensures asset paths work correctly on GitHub Pages
+  },
   scene: [BootScene, GameScene, UIScene, CreditsScene],
   pixelArt: false, // Set to true if using actual pixel art sprites
   physics: {
