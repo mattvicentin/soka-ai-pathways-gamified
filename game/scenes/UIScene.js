@@ -975,6 +975,22 @@ export class UIScene extends Phaser.Scene {
           secondPart = shiftMatch[2].trim();
           hasDescription = true;
         }
+      } else if (choice.label.match(/^Acknowledge/i)) {
+        // Special case: "Acknowledge the integrity failure" pattern
+        // Split so "Acknowledge" is the header and "the integrity failure" is the description
+        // Remove "switch to Prohibitive" or "(switch to Prohibitive)" if present
+        const acknowledgeMatch = choice.label.match(/^Acknowledge\s+(.+)$/i);
+        if (acknowledgeMatch) {
+          firstPart = 'Acknowledge';
+          // Extract description, removing any "switch to X" or "(switch to X)" suffix
+          let desc = acknowledgeMatch[1].trim();
+          // Remove "switch to X" at the end (with or without parentheses)
+          desc = desc.replace(/\s*\(?\s*switch\s+to\s+\w+\s*\)?\s*$/i, '').trim();
+          // Also remove standalone "switch to X" patterns
+          desc = desc.replace(/\s+switch\s+to\s+\w+$/i, '').trim();
+          secondPart = desc;
+          hasDescription = true;
+        }
       } else {
         // First check for dash separator (em dash, en dash, or regular dash)
         // Match various dash types: em dash (—), en dash (–), regular dash (-)
