@@ -35,6 +35,8 @@ export class UIScene extends Phaser.Scene {
     this.reflectionOverlay = null;
     // Resources modal
     this.resourcesOverlay = null;
+    // Customization modal
+    this.customizationOverlay = null;
   }
 
   create() {
@@ -42,6 +44,40 @@ export class UIScene extends Phaser.Scene {
     
     // Get nodeManager from registry
     this.nodeManager = this.registry.get('nodeManager');
+    
+    // Check if we should show customization modal after credits
+    // Check both window object (persists) and registry (backup)
+    const showCustomization = window.showCustomizationAfterCredits || this.registry.get('showCustomizationAfterCredits');
+    console.log('UIScene create - showCustomization flag:', showCustomization, '(window:', window.showCustomizationAfterCredits, ', registry:', this.registry.get('showCustomizationAfterCredits'), ')');
+    if (showCustomization) {
+      // Don't clear flags yet - wait until modal is actually shown
+      // Wait a bit for scene to fully initialize, then show modal
+      this.time.delayedCall(500, () => {
+        console.log('Delayed call executing - showing customization modal after credits scene');
+        // Check flag again in case scene was recreated
+        const stillShow = window.showCustomizationAfterCredits || this.registry.get('showCustomizationAfterCredits');
+        if (stillShow) {
+          // Clear flags now
+          window.showCustomizationAfterCredits = false;
+          this.registry.set('showCustomizationAfterCredits', false);
+          try {
+            console.log('Calling showCustomizationModal()...');
+            this.showCustomizationModal();
+            console.log('showCustomizationModal() called successfully');
+          } catch (error) {
+            console.error('Error showing customization modal:', error);
+            // Fallback: load the node if modal fails
+            const gameScene = this.scene.get('GameScene');
+            if (gameScene) {
+              gameScene.skipAutoLoad = false;
+              gameScene.loadCurrentNode();
+            }
+          }
+        } else {
+          console.warn('Flag was cleared before modal could be shown');
+        }
+      });
+    }
     
     // Create fade overlay for choice button hover effect (initially hidden)
     // Use graphics object which is non-interactive by default
@@ -225,9 +261,9 @@ export class UIScene extends Phaser.Scene {
       }
     );
     
-    // Restart button - bottom-right, 30% smaller
+    // Restart button - bottom-right, moved left
     const restartBtn = this.add.text(
-      width - padding - 40,
+      width - padding - 80,
       height - padding - 20,
       '↻ Restart',
       {
@@ -904,38 +940,56 @@ export class UIScene extends Phaser.Scene {
       let secondPart = '';
       let hasDescription = false;
       
-      // First check for dash separator (em dash, en dash, or regular dash)
-      // Match various dash types: em dash (—), en dash (–), regular dash (-)
-      // Note: Non-breaking hyphen (‑) is NOT included - it keeps words together
-      const dashMatch = choice.label.match(/^(.+?)\s*[—–-]\s*(.+)$/);
-      if (dashMatch) {
-        firstPart = dashMatch[1].trim();
-        secondPart = dashMatch[2].trim();
+      // Special case: "Co - design community storytelling guidelines" pattern
+      // Match "Co - design" or "Co-design" followed by lowercase text
+      // Split so "Co-design" is the header and the rest is the description
+      const coDesignMatch = choice.label.match(/^(Co\s*[-–—]?\s*design)\s+([a-z].+)$/i);
+      if (coDesignMatch) {
+        firstPart = 'Co-design'; // Normalize to "Co-design"
+        secondPart = coDesignMatch[2].trim();
         hasDescription = true;
-        
-        // Debug: log parsing results for troubleshooting
-        if (index === 0 && this.currentNode.id === 'D1') {
-          console.log('D1 First Choice Parsing:', {
-            label: choice.label,
-            firstPart: firstPart,
-            secondPart: secondPart,
-            dashMatch: dashMatch
-          });
-        }
-        
-        // Safety check: ensure firstPart is not empty
-        if (!firstPart || firstPart === '') {
-          console.warn('Dash match found but firstPart is empty for label:', choice.label);
-          // Fallback: use secondPart as firstPart if firstPart is empty
-          if (secondPart) {
-            firstPart = secondPart;
-            secondPart = '';
-            hasDescription = false;
-          }
+      } else if (choice.label.match(/Keep\s+refining/i)) {
+        // Special case: "Keep refining through dialogue" pattern
+        // Split so "Keep refining" is the header and "through dialogue" is the description
+        const keepRefiningMatch = choice.label.match(/^(Keep\s+refining)\s+(.+)$/i);
+        if (keepRefiningMatch) {
+          firstPart = 'Keep refining';
+          secondPart = keepRefiningMatch[2].trim();
+          hasDescription = true;
         }
       } else {
-        // If no dash, check for parentheses (text in parentheses is always a description)
-        const parenMatch = choice.label.match(/^(.+?)\s*\((.+?)\)\s*$/);
+        // First check for dash separator (em dash, en dash, or regular dash)
+        // Match various dash types: em dash (—), en dash (–), regular dash (-)
+        // Note: Non-breaking hyphen (‑) is NOT included - it keeps words together
+        const dashMatch = choice.label.match(/^(.+?)\s*[—–-]\s*(.+)$/);
+        if (dashMatch) {
+          firstPart = dashMatch[1].trim();
+          secondPart = dashMatch[2].trim();
+          hasDescription = true;
+          
+          // Debug: log parsing results for troubleshooting
+          if (index === 0 && this.currentNode.id === 'D1') {
+            console.log('D1 First Choice Parsing:', {
+              label: choice.label,
+              firstPart: firstPart,
+              secondPart: secondPart,
+              dashMatch: dashMatch
+            });
+          }
+          
+          // Safety check: ensure firstPart is not empty
+          if (!firstPart || firstPart === '') {
+            console.warn('Dash match found but firstPart is empty for label:', choice.label);
+            // Fallback: use secondPart as firstPart if firstPart is empty
+            if (secondPart) {
+              firstPart = secondPart;
+              secondPart = '';
+              hasDescription = false;
+            }
+          }
+        } else {
+          // If no dash, check for parentheses (text in parentheses is always a description)
+          const parenMatch = choice.label.match(/^(.+?)\s*\((.+?)\)\s*$/);
         if (parenMatch) {
           firstPart = parenMatch[1].trim();
           secondPart = parenMatch[2].trim();
@@ -1032,6 +1086,7 @@ export class UIScene extends Phaser.Scene {
           }
         }
       }
+      } // Close coDesignMatch else block
       
       // Typewritten text style - lines within each option close together, spacing between options
       const textX = paperArea.centerX - 12; // Shift left 12px for better centering on paper
@@ -1053,12 +1108,13 @@ export class UIScene extends Phaser.Scene {
         headerY,
         headerText,
         {
-          font: 'bold 24px "VT323", monospace', // Larger size for headers to stand out
+          fontFamily: '"VT323", monospace',
+          fontSize: '20px', // Reduced from 24px to fit within paper
+          fontStyle: 'bold', // Explicitly set bold for headers
           color: '#000000', // Darker black for bold appearance
           align: 'center',
           wordWrap: { width: maxTextWidth, useAdvancedWrap: true },
-          stroke: '#FFFFFF', // White stroke for better contrast and readability
-          strokeThickness: 3 // Thicker white stroke for bold effect and readability
+          fontWeight: 'bold' // Additional weight specification
         }
       );
       headerTextObj.setOrigin(0.5, 0.5);
@@ -1076,7 +1132,8 @@ export class UIScene extends Phaser.Scene {
           secondPart,
           {
             fontFamily: '"VT323", monospace',
-            fontSize: '18px', // Increased for better readability
+            fontSize: '16px', // Reduced from 18px to fit within paper
+            fontStyle: 'normal', // Explicitly set normal (not bold) for descriptions
             color: '#1a1a1a',
             align: 'center',
             wordWrap: { width: maxTextWidth, useAdvancedWrap: true }
@@ -2040,7 +2097,7 @@ export class UIScene extends Phaser.Scene {
   restart() {
     console.log('Restarting game...');
     
-    // Show credits scene instead of directly restarting
+    // Show credits scene first, then customization modal after credits
     this.showCreditsScene();
   }
   
@@ -2059,6 +2116,460 @@ export class UIScene extends Phaser.Scene {
       console.log('Fade to black complete, starting credits scene');
       this.scene.start('CreditsScene');
     });
+  }
+
+  showCustomizationModal() {
+    console.log('showCustomizationModal called');
+    // Don't show if already open
+    if (document.getElementById('customization-overlay')) {
+      console.log('Customization modal already open');
+      return;
+    }
+    
+    // Get nodeManager from GameScene
+    const gameScene = this.scene.get('GameScene');
+    if (!gameScene || !gameScene.nodeManager) {
+      console.error('NodeManager not available in showCustomizationModal');
+      return;
+    }
+    
+    console.log('Creating customization modal...');
+    
+    // Create DOM overlay for customization form (matching reflection modal design)
+    // Use window dimensions as fallback if camera is not available
+    const width = this.cameras?.main?.width || window.innerWidth;
+    const height = this.cameras?.main?.height || window.innerHeight;
+    
+    // Create overlay container
+    const overlay = document.createElement('div');
+    overlay.id = 'customization-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    `;
+    // Prevent clicks from passing through to the game
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        // Don't allow closing by clicking outside - user must click Skip or Continue
+        return;
+      }
+    };
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'customization-modal';
+    modal.style.cssText = `
+      background: #D4A574;
+      border: 4px solid #000000;
+      border-radius: 8px;
+      padding: 30px;
+      max-width: ${width - 100}px;
+      max-height: ${height - 100}px;
+      width: 90%;
+      overflow-y: auto;
+      position: relative;
+    `;
+    
+    // Prevent clicks on modal from closing it
+    modal.onclick = (e) => {
+      e.stopPropagation();
+    };
+    
+    // Title
+    const title = document.createElement('h2');
+    title.textContent = 'Customize Your Experience (Optional)';
+    title.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      color: #000000;
+      margin-bottom: 10px;
+      text-align: center;
+    `;
+    
+    // Description
+    const description = document.createElement('p');
+    description.textContent = 'Personalize the game with your institution\'s information. This will customize the narrative text throughout the experience.';
+    description.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #2C1810;
+      margin-bottom: 20px;
+      text-align: center;
+    `;
+    
+    // Form container
+    const form = document.createElement('div');
+    form.id = 'customization-form';
+    form.style.cssText = 'display: flex; flex-direction: column; gap: 15px;';
+    
+    // Get current config values for pre-population (gameScene already declared above)
+    const currentConfig = gameScene.nodeManager.config?.institution || {};
+    
+    // Field 1: Institution Name
+    const nameContainer = this.createCustomizationField('institutionName', 'Institution Name', 'Full name of your institution (appears throughout site)', 'e.g., Soka University of America');
+    if (currentConfig.name) {
+      const input = nameContainer.querySelector('input');
+      if (input) input.value = currentConfig.name;
+    }
+    form.appendChild(nameContainer);
+    
+    // Field 2: Institution Short Name
+    const shortNameContainer = this.createCustomizationField('institutionShort', 'Institution Short Name', 'Abbreviation (e.g., SUA, MIT, UCLA)', 'e.g., SUA');
+    if (currentConfig.shortName) {
+      const input = shortNameContainer.querySelector('input');
+      if (input) input.value = currentConfig.shortName;
+    }
+    form.appendChild(shortNameContainer);
+    
+    // Field 3: Institution Possessive
+    const possessiveContainer = this.createCustomizationField('institutionPossessive', 'Institution Possessive', 'Possessive form (e.g., Soka\'s, Stanford\'s, Yale\'s)', 'e.g., Soka\'s');
+    if (currentConfig.possessive) {
+      const input = possessiveContainer.querySelector('input');
+      if (input) input.value = currentConfig.possessive;
+    }
+    form.appendChild(possessiveContainer);
+    
+    // Field 4: Mission Page URL
+    const missionUrlContainer = this.createCustomizationField('missionUrl', 'Mission Page URL', 'Link to your institution\'s mission/values page', 'e.g., https://www.soka.edu/about/mission', 'url');
+    if (currentConfig.missionUrl) {
+      const input = missionUrlContainer.querySelector('input');
+      if (input) input.value = currentConfig.missionUrl;
+    }
+    form.appendChild(missionUrlContainer);
+    
+    // Field 5: Mission Link Label
+    const missionLabelContainer = this.createCustomizationField('missionLabel', 'Mission Link Label', 'How to label the mission link (e.g., Stanford Mission and Values)', 'e.g., Soka University Mission');
+    if (currentConfig.missionLinkLabel) {
+      const input = missionLabelContainer.querySelector('input');
+      if (input) input.value = currentConfig.missionLinkLabel;
+    }
+    form.appendChild(missionLabelContainer);
+    
+    // Button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = 'display: flex; gap: 10px; justify-content: center; margin-top: 10px;';
+    
+    // Continue button
+    const continueBtn = document.createElement('button');
+    continueBtn.textContent = 'Continue';
+    continueBtn.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #FFFFFF;
+      background: #000000;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      min-width: 120px;
+    `;
+    continueBtn.onmouseover = () => continueBtn.style.background = '#333333';
+    continueBtn.onmouseout = () => continueBtn.style.background = '#000000';
+    continueBtn.onclick = () => this.submitCustomization();
+    
+    // Skip button
+    const skipBtn = document.createElement('button');
+    skipBtn.textContent = 'Skip';
+    skipBtn.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: bold;
+      color: #000000;
+      background: transparent;
+      border: 2px solid #000000;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      min-width: 120px;
+    `;
+    skipBtn.onmouseover = () => {
+      skipBtn.style.background = '#F5E6D3';
+    };
+    skipBtn.onmouseout = () => {
+      skipBtn.style.background = 'transparent';
+    };
+    skipBtn.onclick = () => {
+      console.log('Skip button clicked');
+      this.skipCustomization();
+    };
+    
+    buttonContainer.appendChild(continueBtn);
+    buttonContainer.appendChild(skipBtn);
+    
+    // Assemble modal
+    modal.appendChild(title);
+    modal.appendChild(description);
+    modal.appendChild(form);
+    modal.appendChild(buttonContainer);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    console.log('Customization modal appended to DOM. Overlay element:', overlay);
+    console.log('Modal element:', modal);
+    
+    // Store reference for cleanup
+    this.customizationOverlay = overlay;
+  }
+
+  createCustomizationField(id, label, instruction, placeholder, inputType = 'text') {
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
+    
+    const labelEl = document.createElement('label');
+    labelEl.textContent = label;
+    labelEl.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: bold;
+      color: #000000;
+    `;
+    
+    const instructionEl = document.createElement('p');
+    instructionEl.textContent = instruction;
+    instructionEl.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: #2C1810;
+      margin: 0;
+    `;
+    
+    const input = document.createElement('input');
+    input.type = inputType;
+    input.id = id;
+    input.placeholder = placeholder;
+    input.style.cssText = `
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #000000;
+      background: #F5E6D3;
+      border: 2px solid #000000;
+      border-radius: 4px;
+      padding: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    `;
+    
+    container.appendChild(labelEl);
+    container.appendChild(instructionEl);
+    container.appendChild(input);
+    return container;
+  }
+
+  submitCustomization() {
+    // Get form values
+    const institutionName = document.getElementById('institutionName')?.value.trim() || '';
+    const institutionShort = document.getElementById('institutionShort')?.value.trim() || '';
+    const institutionPossessive = document.getElementById('institutionPossessive')?.value.trim() || '';
+    const missionUrl = document.getElementById('missionUrl')?.value.trim() || '';
+    const missionLabel = document.getElementById('missionLabel')?.value.trim() || '';
+    
+    // Get nodeManager from GameScene
+    const gameScene = this.scene.get('GameScene');
+    if (!gameScene || !gameScene.nodeManager) {
+      console.error('NodeManager not available');
+      this.closeCustomizationModal();
+      return;
+    }
+    
+    // Update NodeManager config with user input (only if provided)
+    if (gameScene.nodeManager && gameScene.nodeManager.config) {
+      if (institutionName) {
+        gameScene.nodeManager.config.institution.name = institutionName;
+      }
+      if (institutionShort) {
+        gameScene.nodeManager.config.institution.shortName = institutionShort;
+      }
+      if (institutionPossessive) {
+        gameScene.nodeManager.config.institution.possessive = institutionPossessive;
+      }
+      if (missionUrl) {
+        gameScene.nodeManager.config.institution.missionUrl = missionUrl;
+      }
+      if (missionLabel) {
+        gameScene.nodeManager.config.institution.missionLinkLabel = missionLabel;
+      }
+      
+      // Re-apply placeholders to all nodes with updated config
+      this.reapplyPlaceholders(gameScene.nodeManager);
+    }
+    
+    // Close modal and restart game to D1
+    this.closeCustomizationModal();
+    this.restartGame();
+  }
+
+  skipCustomization() {
+    console.log('skipCustomization called');
+    // Close modal first
+    this.closeCustomizationModal();
+    // Small delay to ensure DOM is cleaned up before restarting
+    this.time.delayedCall(50, () => {
+      console.log('Restarting game after skip');
+      this.restartGame();
+    });
+  }
+
+  restartGame() {
+    console.log('restartGame called');
+    // Get GameScene and restart it, then navigate to D1
+    const gameScene = this.scene.get('GameScene');
+    
+    if (gameScene && gameScene.nodeManager) {
+      // Clear the skip flag so node will load
+      gameScene.skipAutoLoad = false;
+      
+      // Ensure cameras are visible before loading
+      if (gameScene.cameras && gameScene.cameras.main) {
+        gameScene.cameras.main.setAlpha(1);
+      }
+      if (this.cameras && this.cameras.main) {
+        this.cameras.main.setAlpha(1);
+      }
+      
+      // Load the current node (D1)
+      gameScene.loadCurrentNode();
+      
+      // Wait a frame for scenes to initialize, then fade in
+      this.time.delayedCall(100, () => {
+        const newGameScene = this.scene.get('GameScene');
+        const newUIScene = this.scene.get('UIScene');
+        if (newGameScene && newGameScene.cameras) {
+          // Ensure camera is visible
+          newGameScene.cameras.main.setAlpha(1);
+          // Fade in from black
+          newGameScene.cameras.main.fadeIn(1000, 0, 0, 0);
+        }
+        if (newUIScene && newUIScene.cameras) {
+          // Ensure camera is visible
+          newUIScene.cameras.main.setAlpha(1);
+          // Fade in from black
+          newUIScene.cameras.main.fadeIn(1000, 0, 0, 0);
+        }
+      });
+    }
+  }
+
+  reapplyPlaceholders(nodeManager) {
+    // Re-process all nodes with updated config using original unprocessed nodes
+    const processedNodes = {};
+    const baseNodes = nodeManager.originalNodes;
+    
+    if (!baseNodes || Object.keys(baseNodes).length === 0) {
+      console.warn('No original nodes found for re-applying placeholders');
+      return;
+    }
+    
+    Object.entries(baseNodes).forEach(([id, node]) => {
+      processedNodes[id] = {
+        ...node,
+        title: nodeManager.applyPlaceholders(node.title),
+        narrative: nodeManager.applyPlaceholders(node.narrative),
+        pathLabel: nodeManager.applyPlaceholders(node.pathLabel),
+        resources: node.resources?.map(r => ({
+          ...r,
+          label: nodeManager.applyPlaceholders(r.label),
+          why: nodeManager.applyPlaceholders(r.why),
+          url: nodeManager.applyPlaceholders(r.url)
+        })) || [],
+        choices: node.choices?.map(c => ({
+          ...c,
+          label: nodeManager.applyPlaceholders(c.label)
+        })) || []
+      };
+    });
+    
+    nodeManager.nodes = processedNodes;
+    console.log('✓ Re-applied placeholders with updated customization');
+  }
+
+  closeCustomizationModal() {
+    console.log('closeCustomizationModal called');
+    
+    // First, try to find and remove by ID (most reliable)
+    const overlayById = document.getElementById('customization-overlay');
+    if (overlayById) {
+      console.log('Found overlay by ID, removing...');
+      overlayById.style.display = 'none';
+      overlayById.remove();
+    }
+    
+    // Remove overlay from stored reference
+    if (this.customizationOverlay) {
+      console.log('Removing overlay from stored reference');
+      try {
+        if (this.customizationOverlay.parentNode) {
+          this.customizationOverlay.remove();
+        }
+      } catch (e) {
+        console.warn('Error removing overlay from stored reference:', e);
+      }
+      this.customizationOverlay = null;
+    }
+    
+    // Double-check: remove any remaining overlays using querySelector
+    const allOverlays = document.querySelectorAll('#customization-overlay');
+    if (allOverlays.length > 0) {
+      console.log(`Found ${allOverlays.length} additional overlay(s), removing...`);
+      allOverlays.forEach(ov => {
+        try {
+          ov.style.display = 'none';
+          if (ov.parentNode) {
+            ov.remove();
+          }
+        } catch (e) {
+          console.warn('Error removing additional overlay:', e);
+        }
+      });
+    }
+    
+    // Also check for the modal itself
+    const modal = document.getElementById('customization-modal');
+    if (modal) {
+      console.log('Found modal, removing...');
+      modal.style.display = 'none';
+      if (modal.parentNode) {
+        modal.remove();
+      }
+    }
+    
+    // Final verification
+    const verifyOverlay = document.getElementById('customization-overlay');
+    if (verifyOverlay) {
+      console.error('Overlay still exists after cleanup! Forcing removal with display:none...');
+      verifyOverlay.style.display = 'none';
+      verifyOverlay.style.visibility = 'hidden';
+      verifyOverlay.style.opacity = '0';
+      verifyOverlay.style.pointerEvents = 'none';
+      if (verifyOverlay.parentNode) {
+        verifyOverlay.remove();
+      }
+    } else {
+      console.log('Overlay successfully removed');
+    }
+    
+    // Also check for any elements with the customization overlay class or similar
+    const anyOverlays = document.querySelectorAll('[id*="customization"], [class*="customization"]');
+    if (anyOverlays.length > 0) {
+      console.log(`Found ${anyOverlays.length} additional customization-related element(s), removing...`);
+      anyOverlays.forEach(el => {
+        if (el.id === 'customization-overlay' || el.id === 'customization-modal') {
+          el.style.display = 'none';
+          if (el.parentNode) {
+            el.remove();
+          }
+        }
+      });
+    }
   }
 }
 

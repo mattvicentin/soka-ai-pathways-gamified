@@ -6,6 +6,7 @@
 export class NodeManager {
   constructor() {
     this.nodes = {};
+    this.originalNodes = {}; // Store original unprocessed nodes for re-applying placeholders
     this.config = {};
     this.currentNodeId = 'D1';
     this.trail = [];
@@ -83,6 +84,9 @@ export class NodeManager {
       }
       const baseNodes = await response.json();
       
+      // Store original nodes for re-applying placeholders later
+      this.originalNodes = JSON.parse(JSON.stringify(baseNodes)); // Deep copy
+      
       // Apply placeholder replacements
       const processedNodes = {};
       Object.entries(baseNodes).forEach(([id, node]) => {
@@ -94,7 +98,8 @@ export class NodeManager {
           resources: node.resources?.map(r => ({
             ...r,
             label: this.applyPlaceholders(r.label),
-            why: this.applyPlaceholders(r.why)
+            why: this.applyPlaceholders(r.why),
+            url: this.applyPlaceholders(r.url)
           })) || [],
           choices: node.choices?.map(c => ({
             ...c,

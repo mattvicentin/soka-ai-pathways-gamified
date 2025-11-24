@@ -75,8 +75,13 @@ export class GameScene extends Phaser.Scene {
     this.events.on('changeNode', this.onNodeChange, this);
     
     // Wait for UI scene to be ready before loading first node
+    // Skip auto-load if flag is set (e.g., when coming from credits scene)
     this.time.delayedCall(100, () => {
-      this.loadCurrentNode();
+      if (!this.skipAutoLoad) {
+        this.loadCurrentNode();
+      } else {
+        console.log('Skipping auto-load, waiting for customization modal');
+      }
     });
     
     // Listen for hash changes (browser back/forward)

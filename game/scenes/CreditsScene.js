@@ -45,15 +45,61 @@ export class CreditsScene extends Phaser.Scene {
     creditsText.setDepth(100);
     
     // "from Professor & Student, to Professors & Students" text (initially invisible) - pixelated font
-    const taglineText = this.add.text(width / 2, height / 2 + 40, 'from Professor & Student, to Professors & Students', {
+    // Split into parts to italicize only "from" and "to"
+    const taglineY = height / 2 + 40;
+    const taglineBaseStyle = {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
       color: '#FFFFFF',
       align: 'center'
+    };
+    
+    // Create text parts
+    const fromText = this.add.text(0, taglineY, 'from', {
+      ...taglineBaseStyle,
+      fontStyle: 'italic'
     });
-    taglineText.setOrigin(0.5, 0.5);
-    taglineText.setAlpha(0);
-    taglineText.setDepth(100);
+    fromText.setOrigin(0, 0.5);
+    fromText.setAlpha(0);
+    fromText.setDepth(100);
+    
+    const middleText = this.add.text(0, taglineY, ' Professor & Student, ', taglineBaseStyle);
+    middleText.setOrigin(0, 0.5);
+    middleText.setAlpha(0);
+    middleText.setDepth(100);
+    
+    const toText = this.add.text(0, taglineY, 'to', {
+      ...taglineBaseStyle,
+      fontStyle: 'italic'
+    });
+    toText.setOrigin(0, 0.5);
+    toText.setAlpha(0);
+    toText.setDepth(100);
+    
+    const endText = this.add.text(0, taglineY, ' Professors & Students', taglineBaseStyle);
+    endText.setOrigin(0, 0.5);
+    endText.setAlpha(0);
+    endText.setDepth(100);
+    
+    // Position text parts horizontally centered
+    this.time.delayedCall(50, () => {
+      const totalWidth = fromText.width + middleText.width + toText.width + endText.width;
+      let currentX = width / 2 - totalWidth / 2;
+      
+      fromText.x = currentX;
+      currentX += fromText.width;
+      
+      middleText.x = currentX;
+      currentX += middleText.width;
+      
+      toText.x = currentX;
+      currentX += toText.width;
+      
+      endText.x = currentX;
+    });
+    
+    // Store all tagline parts for animation
+    const taglineText = [fromText, middleText, toText, endText];
     
     // Red pixelated heart sprite (initially invisible)
     const heartSprite = this.add.image(width / 2, height / 2 + 60, 'heart');
@@ -80,7 +126,7 @@ export class CreditsScene extends Phaser.Scene {
           onComplete: () => {
             // 3. After credits finish fading in, fade in tagline and heart (1 second)
             this.tweens.add({
-              targets: [taglineText, heartSprite],
+              targets: [...taglineText, heartSprite],
               alpha: 1,
               duration: 1000,
               ease: 'Power2'
@@ -100,7 +146,7 @@ export class CreditsScene extends Phaser.Scene {
         onComplete: () => {
                       // 5. Fade out everything else
                       this.tweens.add({
-                        targets: [creditsText, taglineText, heartSprite],
+                        targets: [creditsText, ...taglineText, heartSprite],
                         alpha: 0,
                         duration: 1000,
                         ease: 'Power2',
@@ -118,39 +164,84 @@ export class CreditsScene extends Phaser.Scene {
     // Fade to black using camera fade
     this.cameras.main.fadeOut(1000, 0, 0, 0);
     
-    // When fade completes, transition to D1
+    // When fade completes, restart scenes first, then show customization modal
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      // Get GameScene and restart it, then navigate to D1
+      // Get GameScene to access nodeManager
       const gameScene = this.scene.get('GameScene');
-      const uiScene = this.scene.get('UIScene');
       
       if (gameScene && gameScene.nodeManager) {
-        // Reset to D1
+        // Reset to D1 but don't load it yet
         gameScene.nodeManager.restart();
         window.location.hash = 'node=D1';
+        
+        // Set flag to prevent auto-loading node
+        gameScene.skipAutoLoad = true;
         
         // Stop credits scene
         this.scene.stop('CreditsScene');
         
-        // Start game scenes with cameras already faded out
+        // Set flag to show customization modal when UIScene is created
+        // Store in window object to persist across scene restarts
+        window.showCustomizationAfterCredits = true;
+        console.log('CreditsScene: Set showCustomizationAfterCredits flag to true (window)');
+        
+        // Also set in registry as backup
+        this.registry.set('showCustomizationAfterCredits', true);
+        
+        // Restart game scenes with cameras already faded out
         this.scene.start('GameScene');
         this.scene.start('UIScene');
-        
-        // Wait a frame for scenes to initialize, then fade in
-        this.time.delayedCall(50, () => {
-          const newGameScene = this.scene.get('GameScene');
-          const newUIScene = this.scene.get('UIScene');
-          if (newGameScene && newGameScene.cameras) {
-            newGameScene.cameras.main.setAlpha(0);
-            newGameScene.cameras.main.fadeIn(1000, 0, 0, 0);
-          }
-          if (newUIScene && newUIScene.cameras) {
-            newUIScene.cameras.main.setAlpha(0);
-            newUIScene.cameras.main.fadeIn(1000, 0, 0, 0);
-          }
-        });
+      } else {
+        // Fallback: restart directly
+        this.restartGame();
       }
     });
+  }
+
+  fadeInScenes() {
+    // Fade in the game scenes
+    this.time.delayedCall(50, () => {
+      const newGameScene = this.scene.get('GameScene');
+      const newUIScene = this.scene.get('UIScene');
+      if (newGameScene && newGameScene.cameras) {
+        newGameScene.cameras.main.setAlpha(0);
+        newGameScene.cameras.main.fadeIn(1000, 0, 0, 0);
+      }
+      if (newUIScene && newUIScene.cameras) {
+        newUIScene.cameras.main.setAlpha(0);
+        newUIScene.cameras.main.fadeIn(1000, 0, 0, 0);
+      }
+    });
+  }
+
+  restartGame() {
+    // Get GameScene and restart it, then navigate to D1
+    const gameScene = this.scene.get('GameScene');
+    const uiScene = this.scene.get('UIScene');
+    
+    if (gameScene && gameScene.nodeManager) {
+      // Reset to D1
+      gameScene.nodeManager.restart();
+      window.location.hash = 'node=D1';
+      
+      // Start game scenes with cameras already faded out
+      this.scene.start('GameScene');
+      this.scene.start('UIScene');
+      
+      // Wait a frame for scenes to initialize, then fade in
+      this.time.delayedCall(50, () => {
+        const newGameScene = this.scene.get('GameScene');
+        const newUIScene = this.scene.get('UIScene');
+        if (newGameScene && newGameScene.cameras) {
+          newGameScene.cameras.main.setAlpha(0);
+          newGameScene.cameras.main.fadeIn(1000, 0, 0, 0);
+        }
+        if (newUIScene && newUIScene.cameras) {
+          newUIScene.cameras.main.setAlpha(0);
+          newUIScene.cameras.main.fadeIn(1000, 0, 0, 0);
+        }
+      });
+    }
   }
 }
 
