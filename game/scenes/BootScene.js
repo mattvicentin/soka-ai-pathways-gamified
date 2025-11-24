@@ -198,15 +198,11 @@ export class BootScene extends Phaser.Scene {
     const shortNameContainer = this.createCustomizationField('institutionShort', 'Institution Short Name', 'Abbreviation (e.g., SUA, MIT, UCLA)', 'e.g., SUA');
     form.appendChild(shortNameContainer);
     
-    // Field 3: Institution Possessive
-    const possessiveContainer = this.createCustomizationField('institutionPossessive', 'Institution Possessive', 'Possessive form (e.g., Soka\'s, Stanford\'s, Yale\'s)', 'e.g., Soka\'s');
-    form.appendChild(possessiveContainer);
-    
-    // Field 4: Mission Page URL
+    // Field 3: Mission Page URL
     const missionUrlContainer = this.createCustomizationField('missionUrl', 'Mission Page URL', 'Link to your institution\'s mission/values page', 'e.g., https://www.soka.edu/about/mission', 'url');
     form.appendChild(missionUrlContainer);
     
-    // Field 5: Mission Link Label
+    // Field 4: Mission Link Label
     const missionLabelContainer = this.createCustomizationField('missionLabel', 'Mission Link Label', 'How to label the mission link (e.g., Stanford Mission and Values)', 'e.g., Soka University Mission');
     form.appendChild(missionLabelContainer);
     
@@ -271,6 +267,30 @@ export class BootScene extends Phaser.Scene {
     this.customizationOverlay = overlay;
   }
 
+  /**
+   * Generate possessive form from institution short name
+   * Examples: "SUA" -> "SUA's", "MIT" -> "MIT's"
+   * Handles edge cases like empty strings or already possessive forms
+   */
+  generatePossessive(shortName) {
+    if (!shortName || typeof shortName !== 'string') {
+      return '';
+    }
+    
+    const trimmed = shortName.trim();
+    if (!trimmed) {
+      return '';
+    }
+    
+    // If it already ends with an apostrophe and 's', return as is
+    if (trimmed.endsWith("'s") || trimmed.endsWith("'")) {
+      return trimmed;
+    }
+    
+    // Otherwise, add 's
+    return trimmed + "'s";
+  }
+
   createCustomizationField(id, label, instruction, placeholder, inputType = 'text') {
     const container = document.createElement('div');
     container.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
@@ -319,7 +339,6 @@ export class BootScene extends Phaser.Scene {
     // Get form values
     const institutionName = document.getElementById('institutionName')?.value.trim() || '';
     const institutionShort = document.getElementById('institutionShort')?.value.trim() || '';
-    const institutionPossessive = document.getElementById('institutionPossessive')?.value.trim() || '';
     const missionUrl = document.getElementById('missionUrl')?.value.trim() || '';
     const missionLabel = document.getElementById('missionLabel')?.value.trim() || '';
     
@@ -330,9 +349,8 @@ export class BootScene extends Phaser.Scene {
       }
       if (institutionShort) {
         this.nodeManager.config.institution.shortName = institutionShort;
-      }
-      if (institutionPossessive) {
-        this.nodeManager.config.institution.possessive = institutionPossessive;
+        // Automatically generate possessive from short name
+        this.nodeManager.config.institution.possessive = this.generatePossessive(institutionShort);
       }
       if (missionUrl) {
         this.nodeManager.config.institution.missionUrl = missionUrl;
