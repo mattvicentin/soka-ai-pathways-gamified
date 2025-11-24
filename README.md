@@ -33,7 +33,7 @@ The explorer includes:
 - **Character sprites** that react to different pathways
 - **Dynamic backgrounds** that change based on your choices
 - **Same great content** - all 23 nodes from the main app
-- **[Play the Game Version](./game/)** or click the "Game Version (Beta)" button on the main site
+- **[🎮 Play the Game Version](https://mattvicentin.github.io/soka-ai-pathways-gamified/game/)** or click the "Game Version (Beta)" button on the main site
 
 Perfect for a more immersive, game-like exploration of AI pedagogy approaches. See [`game/README.md`](./game/README.md) for details.
 
@@ -58,9 +58,11 @@ python3 -m http.server 8080
 
 ## Live Site
 
-**🌐 https://writeian.github.io/soka-ai-pathways/**
+**🌐 [https://mattvicentin.github.io/soka-ai-pathways-gamified/](https://mattvicentin.github.io/soka-ai-pathways-gamified/)**
 
 Start at the dilemma (`/#node=D1`) and follow your pedagogical instincts through realistic classroom scenarios.
+
+**🎮 [Play the Game Version](https://mattvicentin.github.io/soka-ai-pathways-gamified/game/)**
 
 ## Project Structure
 
