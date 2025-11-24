@@ -162,15 +162,12 @@ Potential additions beyond POC:
 
 ## 📝 Customization
 
-The game inherits customization from the main app:
-- Institution name/branding from `config.json`
-- Pathway colors automatically applied
-- All placeholder text replaced
+The game includes a built-in customization interface that appears when you start the game or restart. You can customize:
+- Institution name and abbreviation
+- Mission page URL and link label
+- All narrative text automatically updates with your institution's information
 
-To customize the game specifically:
-- Edit colors in `game.css`
-- Modify UI layout in `UIScene.js`
-- Adjust dialogue box styling in `UIScene.createDialogueBox()`
+The customization is optional - you can skip it to use the default Soka University settings.
 
 ## 🐛 Known Issues
 

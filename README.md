@@ -2,21 +2,7 @@
 
 An interactive, choose-your-own-path experience exploring **five pedagogical approaches to AI in the classroom**.
 
-Originally designed for **Soka University of America**'s 2025 Faculty Workshop, now **customizable for any institution**.
-
----
-
-## 🎯 Quick Start - Customize for Your Institution
-
-**Want to use this at your university?** Customize it in 20 minutes:
-
-**👉 [Use the Customization Template](https://docs.google.com/spreadsheets/d/16q3f9psLpRvti4WyzKw0Ffc4bynYFDaBQqhY-ggEQZ0/template/preview)**
-
-1. Click "Use Template" → Edit 14 fields (name, colors, values)
-2. Download as Excel → Run generator script
-3. Deploy to GitHub Pages → Share with faculty!
-
-**📖 [Full Customization Guide](./docs/Admin-Customization-System-Guide.md)** | **📋 [Step-by-Step Instructions](./customization-kit/README.md)**
+Originally designed for **Soka University of America**'s 2025 Faculty Workshop, now **customizable for any institution** through the built-in game customization interface.
 
 ---
 
