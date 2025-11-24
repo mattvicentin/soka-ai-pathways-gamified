@@ -957,6 +957,24 @@ export class UIScene extends Phaser.Scene {
           secondPart = keepRefiningMatch[2].trim();
           hasDescription = true;
         }
+      } else if (choice.label.match(/^Facilitate/i)) {
+        // Special case: "Facilitate collective inquiry" pattern
+        // Split so "Facilitate" is the header and "collective inquiry" is the description
+        const facilitateMatch = choice.label.match(/^(Facilitate)\s+(.+)$/i);
+        if (facilitateMatch) {
+          firstPart = 'Facilitate';
+          secondPart = facilitateMatch[2].trim();
+          hasDescription = true;
+        }
+      } else if (choice.label.match(/Shift\s+to\s+Collaborative/i)) {
+        // Special case: "Shift to Collaborative co-design" pattern
+        // Split so "Shift to Collaborative" is the header and "co-design" is the description
+        const shiftMatch = choice.label.match(/^(Shift\s+to\s+Collaborative)\s+(.+)$/i);
+        if (shiftMatch) {
+          firstPart = 'Shift to Collaborative';
+          secondPart = shiftMatch[2].trim();
+          hasDescription = true;
+        }
       } else {
         // First check for dash separator (em dash, en dash, or regular dash)
         // Match various dash types: em dash (—), en dash (–), regular dash (-)
@@ -1266,7 +1284,7 @@ export class UIScene extends Phaser.Scene {
       '📚 Resources',
       {
         fontFamily: '"VT323", monospace',
-        fontSize: '12px',
+        fontSize: '18px', // Increased from 12px for better readability
         color: '#FFFFFF',
         fontStyle: 'bold'
       }
