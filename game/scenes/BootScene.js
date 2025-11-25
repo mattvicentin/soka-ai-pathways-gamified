@@ -61,17 +61,18 @@ export class BootScene extends Phaser.Scene {
       // Store nodeManager globally so other scenes can access it
       this.registry.set('nodeManager', this.nodeManager);
       
-      // Hide loading screen
+      // Smooth fade out loading screen
       const loadingScreen = document.getElementById('loading-screen');
       if (loadingScreen) {
-        loadingScreen.classList.add('hidden');
+        loadingScreen.style.transition = 'opacity 0.6s ease-out';
+        loadingScreen.style.opacity = '0';
         setTimeout(() => {
           loadingScreen.style.display = 'none';
-        }, 500);
+        }, 600);
       }
       
-      // Show customization modal before starting game
-      this.time.delayedCall(100, () => {
+      // Show customization modal after loading screen fades
+      this.time.delayedCall(700, () => {
         this.showCustomizationModal();
       });
       
@@ -367,23 +368,23 @@ export class BootScene extends Phaser.Scene {
       this.reapplyPlaceholders();
     }
     
-    // Close modal and start game
-    this.closeCustomizationModal();
-    
     // Unlock audio before starting GameScene (user clicked Continue, so this counts as user interaction)
     this.registry.set('audioUnlocked', true);
     
-    this.scene.start('GameScene');
+    // Smooth fade out customization modal, then start game
+    this.fadeOutCustomizationModal(() => {
+      this.scene.start('GameScene');
+    });
   }
 
   skipCustomization() {
-    // Close modal and start game with default config
-    this.closeCustomizationModal();
-    
     // Unlock audio before starting GameScene (user clicked Skip, so this counts as user interaction)
     this.registry.set('audioUnlocked', true);
     
-    this.scene.start('GameScene');
+    // Smooth fade out customization modal, then start game
+    this.fadeOutCustomizationModal(() => {
+      this.scene.start('GameScene');
+    });
   }
 
   reapplyPlaceholders() {
@@ -417,6 +418,26 @@ export class BootScene extends Phaser.Scene {
     
     this.nodeManager.nodes = processedNodes;
     console.log('✓ Re-applied placeholders with updated customization');
+  }
+
+  fadeOutCustomizationModal(callback) {
+    if (this.customizationOverlay) {
+      // Add fade out transition
+      this.customizationOverlay.style.transition = 'opacity 0.5s ease-out';
+      this.customizationOverlay.style.opacity = '0';
+      
+      // Remove from DOM after fade completes
+      setTimeout(() => {
+        if (this.customizationOverlay) {
+          this.customizationOverlay.remove();
+          this.customizationOverlay = null;
+        }
+        if (callback) callback();
+      }, 500);
+    } else {
+      // If no overlay, just call callback immediately
+      if (callback) callback();
+    }
   }
 
   closeCustomizationModal() {

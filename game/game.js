@@ -13,7 +13,7 @@ const config = {
   parent: 'game-canvas',
   width: 1024,
   height: 768,
-  backgroundColor: '#1a1a2e',
+  backgroundColor: '#000000',
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

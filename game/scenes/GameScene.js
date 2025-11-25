@@ -85,6 +85,43 @@ export class GameScene extends Phaser.Scene {
     // Audio is loaded in BootScene - just mark as ready
     this.audioLoaded = true;
     
+    // Start with scene faded out, then fade in smoothly after sprites are created
+    this.cameras.main.setAlpha(0);
+    console.log('GameScene camera alpha set to 0, will fade in');
+    
+    // Fade in both scenes smoothly after sprites are created
+    // Wait for UI scene to be fully initialized
+    this.time.delayedCall(500, () => {
+      console.log('Starting fade in... Current alpha:', this.cameras.main.alpha);
+      
+      // Use tween to fade camera alpha from 0 to 1 (more reliable than fadeIn)
+      this.tweens.add({
+        targets: this.cameras.main,
+        alpha: 1,
+        duration: 600,
+        ease: 'Power2',
+        onComplete: () => {
+          console.log('GameScene fade complete, alpha:', this.cameras.main.alpha);
+        }
+      });
+      
+      const uiScene = this.scene.get('UIScene');
+      if (uiScene && uiScene.cameras && uiScene.cameras.main) {
+        console.log('UIScene found, starting fade. Current alpha:', uiScene.cameras.main.alpha);
+        uiScene.tweens.add({
+          targets: uiScene.cameras.main,
+          alpha: 1,
+          duration: 600,
+          ease: 'Power2',
+          onComplete: () => {
+            console.log('UIScene fade complete, alpha:', uiScene.cameras.main.alpha);
+          }
+        });
+      } else {
+        console.warn('UIScene not found or cameras not ready');
+      }
+    });
+    
     // Wait for UI scene to be ready before loading first node
     // Skip auto-load if flag is set (e.g., when coming from credits scene)
     this.time.delayedCall(100, () => {
@@ -334,18 +371,11 @@ export class GameScene extends Phaser.Scene {
     // Scale increased by 20%: 0.408 * 1.2 = 0.4896
     this.currentSprite.setScale(0.4896); // Increased by 20%
     this.currentSprite.setDepth(0);
-    this.currentSprite.setAlpha(0);
+    // Start visible - camera fade will handle the transition
+    this.currentSprite.setAlpha(1);
     
     // Keep origin at center (0.5, 0.5) - default
     // This way, positioning slightly above bottom shows bottom half
-    
-    // Fade in
-    this.tweens.add({
-      targets: this.currentSprite,
-      alpha: 1,
-      duration: 500,
-      ease: 'Power2'
-    });
   }
 
   loadCurrentNode() {

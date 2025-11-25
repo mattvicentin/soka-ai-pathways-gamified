@@ -42,6 +42,10 @@ export class UIScene extends Phaser.Scene {
   create() {
     console.log('UIScene: Starting...');
     
+    // Start with scene faded out, will fade in with GameScene
+    this.cameras.main.setAlpha(0);
+    console.log('UIScene camera alpha set to 0, will fade in with GameScene');
+    
     // Get nodeManager from registry
     this.nodeManager = this.registry.get('nodeManager');
     
@@ -2476,12 +2480,14 @@ export class UIScene extends Phaser.Scene {
       // Clear the skip flag so node will load
       gameScene.skipAutoLoad = false;
       
-      // Ensure cameras are visible before loading
+      // Reset cameras to fully visible before restarting
       if (gameScene.cameras && gameScene.cameras.main) {
         gameScene.cameras.main.setAlpha(1);
+        gameScene.cameras.main.clearTint();
       }
       if (this.cameras && this.cameras.main) {
         this.cameras.main.setAlpha(1);
+        this.cameras.main.clearTint();
       }
       
       // Load the current node (D1)
