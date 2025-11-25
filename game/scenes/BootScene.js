@@ -41,6 +41,10 @@ export class BootScene extends Phaser.Scene {
     // Load heart sprite for credits scene
     this.load.image('heart', 'assets/sprites/heart.png');
     
+    // Load bookshelf sprites
+    this.load.image('bookshelf-left', 'assets/sprites/bookshelf_left.png');
+    this.load.image('bookshelf-right', 'assets/sprites/bookshelf_right.png');
+    
     // Load audio files - errors are handled gracefully so game continues if files fail
     this.loadAudioAssets();
   }

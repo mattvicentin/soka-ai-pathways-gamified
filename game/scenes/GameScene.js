@@ -128,6 +128,8 @@ export class GameScene extends Phaser.Scene {
     // Create background image
     const centerX = this.cameras.main.centerX;
     const centerY = this.cameras.main.centerY;
+    const width = this.cameras.main.width;
+    const height = this.cameras.main.height;
     
     this.currentBackground = this.add.image(
       centerX,
@@ -137,23 +139,182 @@ export class GameScene extends Phaser.Scene {
     
     // Scale background to cover the entire screen (1024x1024 image on 1024x768 canvas)
     // Scale to fit width, then adjust height if needed
-    const scaleX = this.cameras.main.width / 1024;
-    const scaleY = this.cameras.main.height / 1024;
+    const scaleX = width / 1024;
+    const scaleY = height / 1024;
     const scale = Math.max(scaleX, scaleY); // Cover entire screen
     this.currentBackground.setScale(scale);
     
     this.currentBackground.setDepth(-10);
     
+    // Add bookshelf sprites on the sides using DOM elements (outside Phaser canvas)
+    // This fills the blue side areas that appear when canvas doesn't fill screen width
+    this.addBookshelvesToSides();
+    
     // Add a subtle overlay to maintain pathway color theming (optional)
     this.backgroundOverlay = this.add.rectangle(
       centerX,
       centerY,
-      this.cameras.main.width,
-      this.cameras.main.height,
+      width,
+      height,
       0x000000,
       0.0 // Start with no overlay
     );
-    this.backgroundOverlay.setDepth(-9);
+    this.backgroundOverlay.setDepth(-8);
+  }
+
+  addBookshelvesToSides() {
+    // Remove any existing bookshelf DOM elements
+    const existingLeft = document.getElementById('bookshelf-left-container');
+    const existingRight = document.getElementById('bookshelf-right-container');
+    if (existingLeft) existingLeft.remove();
+    if (existingRight) existingRight.remove();
+    
+    // Get the game container and canvas
+    const gameContainer = document.getElementById('game-container');
+    if (!gameContainer) return;
+    
+    const canvas = this.game.canvas;
+    
+    // Wait for next frame to ensure canvas is positioned
+    this.time.delayedCall(100, () => {
+      const canvasRect = canvas.getBoundingClientRect();
+      const containerRect = gameContainer.getBoundingClientRect();
+      const bodyRect = document.body.getBoundingClientRect();
+      
+      // Calculate the side areas (space between canvas edges and viewport edges)
+      const leftSpace = canvasRect.left - bodyRect.left;
+      const rightSpace = bodyRect.right - canvasRect.right;
+      
+      // Add left bookshelf if there's space
+      if (leftSpace > 10) {
+        // Container for bookshelf and overlay
+        const leftContainer = document.createElement('div');
+        leftContainer.id = 'bookshelf-left-container';
+        leftContainer.style.cssText = `
+          position: fixed;
+          left: 0;
+          top: ${canvasRect.top}px;
+          height: ${canvasRect.height}px;
+          width: ${leftSpace}px;
+          z-index: 0;
+        `;
+        
+        const leftBookshelf = document.createElement('img');
+        leftBookshelf.src = 'assets/sprites/bookshelf_left.png';
+        leftBookshelf.id = 'bookshelf-left-dom';
+        leftBookshelf.style.cssText = `
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
+          image-rendering: -moz-crisp-edges;
+          image-rendering: crisp-edges;
+        `;
+        
+        // Black fade overlay (fades from dark on right edge - near canvas - to transparent on left edge - outer edge)
+        const leftOverlay = document.createElement('div');
+        leftOverlay.style.cssText = `
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          background: linear-gradient(to left, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 100%);
+          pointer-events: none;
+        `;
+        
+        leftContainer.appendChild(leftBookshelf);
+        leftContainer.appendChild(leftOverlay);
+        document.body.appendChild(leftContainer);
+        this.leftBookshelfDOM = leftContainer;
+      }
+      
+      // Add right bookshelf if there's space
+      if (rightSpace > 10) {
+        // Container for bookshelf and overlay
+        const rightContainer = document.createElement('div');
+        rightContainer.id = 'bookshelf-right-container';
+        rightContainer.style.cssText = `
+          position: fixed;
+          right: 0;
+          top: ${canvasRect.top}px;
+          height: ${canvasRect.height}px;
+          width: ${rightSpace}px;
+          z-index: 0;
+        `;
+        
+        const rightBookshelf = document.createElement('img');
+        rightBookshelf.src = 'assets/sprites/bookshelf_right.png';
+        rightBookshelf.id = 'bookshelf-right-dom';
+        rightBookshelf.style.cssText = `
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
+          image-rendering: -moz-crisp-edges;
+          image-rendering: crisp-edges;
+        `;
+        
+        // Black fade overlay (fades from dark on left edge - near canvas - to transparent on right edge - outer edge)
+        const rightOverlay = document.createElement('div');
+        rightOverlay.style.cssText = `
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          background: linear-gradient(to right, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 100%);
+          pointer-events: none;
+        `;
+        
+        rightContainer.appendChild(rightBookshelf);
+        rightContainer.appendChild(rightOverlay);
+        document.body.appendChild(rightContainer);
+        this.rightBookshelfDOM = rightContainer;
+      }
+      
+      // Update positions on window resize
+      const resizeHandler = () => {
+        this.updateBookshelfPositions();
+      };
+      window.addEventListener('resize', resizeHandler);
+      this.resizeHandler = resizeHandler;
+    });
+  }
+
+  updateBookshelfPositions() {
+    const canvas = this.game.canvas;
+    if (!canvas) return;
+    
+    const canvasRect = canvas.getBoundingClientRect();
+    const bodyRect = document.body.getBoundingClientRect();
+    
+    const leftSpace = canvasRect.left - bodyRect.left;
+    const rightSpace = bodyRect.right - canvasRect.right;
+    
+    if (this.leftBookshelfDOM && leftSpace > 10) {
+      this.leftBookshelfDOM.style.top = `${canvasRect.top}px`;
+      this.leftBookshelfDOM.style.height = `${canvasRect.height}px`;
+      this.leftBookshelfDOM.style.width = `${leftSpace}px`;
+    } else if (this.leftBookshelfDOM) {
+      this.leftBookshelfDOM.remove();
+      this.leftBookshelfDOM = null;
+    }
+    
+    if (this.rightBookshelfDOM && rightSpace > 10) {
+      this.rightBookshelfDOM.style.top = `${canvasRect.top}px`;
+      this.rightBookshelfDOM.style.height = `${canvasRect.height}px`;
+      this.rightBookshelfDOM.style.width = `${rightSpace}px`;
+    } else if (this.rightBookshelfDOM) {
+      this.rightBookshelfDOM.remove();
+      this.rightBookshelfDOM = null;
+    }
   }
 
   setupCharacterSprite() {
@@ -320,6 +481,20 @@ export class GameScene extends Phaser.Scene {
     // Clean up event listeners
     this.events.off('changeNode');
     this.audioManager.stopMusic();
+    
+    // Clean up DOM bookshelf elements
+    if (this.leftBookshelfDOM) {
+      this.leftBookshelfDOM.remove();
+      this.leftBookshelfDOM = null;
+    }
+    if (this.rightBookshelfDOM) {
+      this.rightBookshelfDOM.remove();
+      this.rightBookshelfDOM = null;
+    }
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler);
+      this.resizeHandler = null;
+    }
   }
 }
 
