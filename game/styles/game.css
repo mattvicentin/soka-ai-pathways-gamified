@@ -6,7 +6,7 @@
 
 body {
   font-family: 'Inter', Arial, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #2C1810 0%, #3D2817 50%, #1a1a1a 100%);
   overflow: hidden;
   width: 100vw;
   height: 100vh;
@@ -41,7 +41,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #0a0a15 0%, #1a1a2e 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #2C1810 50%, #3D2817 100%);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -65,15 +65,15 @@ body {
   font-family: 'Press Start 2P', monospace;
   font-size: 1.2rem;
   margin-bottom: 2rem;
-  color: #66B0FF;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
+  color: #D4A574;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
 }
 
 .loading-bar {
   width: 100%;
   height: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid #66B0FF;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid #000000;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 1rem;
@@ -81,7 +81,7 @@ body {
 
 .loading-progress {
   height: 100%;
-  background: linear-gradient(90deg, #66B0FF 0%, #0048B7 100%);
+  background: linear-gradient(90deg, #D4A574 0%, #8B6F47 50%, #5C3A1F 100%);
   width: 0%;
   transition: width 0.3s ease;
 }
