@@ -433,7 +433,7 @@
     "path": "embracing",
     "pathLabel": "AI\u2011Embracing",
     "title": "Outcome: Innovation and Depth",
-    "narrative": "At semester's end, students present reflective projects titled \"What I Learned From My AI Mistakes.\" Their work is messy, honest, and profound. Some still rely too much on the tool, but most articulate a clearer sense of authorship. You feel both exhausted and inspired. When you share at a {{writing_center}} AI workshop, a colleague says, \"This feels like the future of {{institution_short}} education: humanistic, creative, responsible.\" Another confides later on that he doesn't have the time and hasn't gotten the training to repeat your experiment in his course.",
+    "narrative": "At semester's end, students present reflective projects titled \"What I Learned From My AI Mistakes.\" Their work is messy, honest, and profound. Some still rely too much on the tool, but most articulate a clearer sense of authorship. You feel both exhausted and inspired. When you share your approach at a faculty development workshop, a colleague says, \"This feels like the future of {{institution_short}} education: humanistic, creative, responsible.\" Another confides later on that he doesn't have the time and hasn't gotten the training to repeat your experiment in his course.",
     "resources": [
       {
         "label": "EDUCAUSE Review (2025) \u2014 A More Human University",
@@ -632,7 +632,7 @@
     "path": "embracing",
     "pathLabel": "AI-Embracing",
     "title": "Community Partnership Dilemma",
-    "narrative": "A Student Fellow from the {{research_center}} asks if your seminar could help her co-create narratives for a justice campaign. Students debate whether to use AI for rapid translation and story drafts. Some argue it could amplify marginalized voices; others worry about accuracy and consent. You remind them of the need to balance efficiency with respect and accuracy.",
+    "narrative": "A student working with a {{research_center}} project asks if your seminar could help her co-create narratives for a justice campaign. Students debate whether to use AI for rapid translation and story drafts. Some argue it could amplify marginalized voices; others worry about accuracy and consent. You remind them of the need to balance efficiency with respect and accuracy.",
     "resources": [
       {
         "label": "{{research_center}}",
@@ -666,7 +666,7 @@
     "path": "collaborative",
     "pathLabel": "Collaborative",
     "title": "Community Storytelling Lab",
-    "narrative": "Your seminar partners with the {{writing_center}} to host a community storytelling lab. Student teams craft guidelines for using AI to support oral histories from local activists. They debate whether AI summaries honor or flatten lived experience, anchoring decisions in {{institution_short}}'s principle of educating leaders of culture in the community.",
+    "narrative": "Your seminar partners with a campus program to host a community storytelling lab. Student teams craft guidelines for using AI to support oral histories from local activists. They debate whether AI summaries honor or flatten lived experience, anchoring decisions in {{institution_short}}'s principle of educating leaders of culture in the community.",
     "resources": [
       {
         "label": "Helping Writers Become Authors \u2014 Intentional Storytelling in the AI Era",
