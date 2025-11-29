@@ -19,21 +19,20 @@ To enable automatic email sending for the reflection form, you need to set up Em
    - Go to "Email Templates" in dashboard
    - Click "Create New Template"
    - Set up template with these variables:
-     - `{{from_email}}` - From address (mvicentin@soka.edu)
-     - `{{to_email}}` - Primary recipient (iread@soka.edu)
-     - `{{to_email_cc}}` - CC recipient (mvicentin@soka.edu)
+     - `{{email}}` - Primary recipient (DYNAMIC - set by user in customization modal)
+     - `{{email_cc}}` - CC recipient (DYNAMIC - optional, set by user in customization modal)
      - `{{subject}}` - Email subject
      - `{{message}}` - Full email body
      - `{{protected}}` - What did you protect?
      - `{{risked}}` - What did you risk?
      - `{{learned}}` - What did you learn?
      - `{{next_step}}` - What is one concrete next step?
-   - Set "From Name" to your name
-   - Set "From Email" to mvicentin@soka.edu
-   - Set "To Email" to iread@soka.edu
-   - Set "CC" to mvicentin@soka.edu
-   - Set "Subject" to {{subject}}
-   - Set "Content" to include all the reflection fields
+   - **IMPORTANT**: Set "From Name" to your name (or organization name)
+   - **IMPORTANT**: Set "From Email" to your dedicated email account (the one connected to EmailJS service)
+   - **CRITICAL**: Set "To Email" to `{{email}}` (NOT a static email - must use the template variable!)
+   - **CRITICAL**: Set "Cc" to `{{email_cc}}` (NOT a static email - must use the template variable, or leave empty if not needed)
+   - Set "Subject" to `{{subject}}`
+   - Set "Content" to include all the reflection fields (use the HTML template provided)
    - Note your **Template ID**
 
 4. **Get Public Key**

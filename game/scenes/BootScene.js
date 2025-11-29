@@ -211,6 +211,10 @@ export class BootScene extends Phaser.Scene {
     const missionLabelContainer = this.createCustomizationField('missionLabel', 'Mission Link Label', 'How to label the mission link (e.g., Stanford Mission and Values)', 'e.g., Soka University Mission');
     form.appendChild(missionLabelContainer);
     
+    // Collapsible Email Section
+    const emailSection = this.createCollapsibleEmailSection();
+    form.appendChild(emailSection);
+    
     // Button container
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = 'display: flex; gap: 10px; justify-content: center; margin-top: 10px;';
@@ -340,12 +344,57 @@ export class BootScene extends Phaser.Scene {
     return container;
   }
 
+  createCollapsibleEmailSection() {
+    const section = document.createElement('div');
+    section.style.cssText = 'display: flex; flex-direction: column; gap: 10px; border: 2px solid #000000; border-radius: 4px; padding: 15px; background: #F5E6D3;';
+    
+    // Collapsible header
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;';
+    header.onclick = () => {
+      const isExpanded = content.style.display !== 'none';
+      content.style.display = isExpanded ? 'none' : 'flex';
+      toggleIcon.textContent = isExpanded ? '▶' : '▼';
+    };
+    
+    const headerText = document.createElement('span');
+    headerText.textContent = 'Who should receive reflections?';
+    headerText.style.cssText = 'font-family: \'Inter\', sans-serif; font-size: 14px; font-weight: bold; color: #000000;';
+    
+    const toggleIcon = document.createElement('span');
+    toggleIcon.textContent = '▶';
+    toggleIcon.style.cssText = 'font-family: \'Inter\', sans-serif; font-size: 12px; color: #000000;';
+    
+    header.appendChild(headerText);
+    header.appendChild(toggleIcon);
+    
+    // Collapsible content (initially hidden)
+    const content = document.createElement('div');
+    content.id = 'email-section-content';
+    content.style.cssText = 'display: none; flex-direction: column; gap: 15px; margin-top: 10px;';
+    
+    // Primary Recipient Email
+    const primaryEmailContainer = this.createCustomizationField('primaryRecipientEmail', 'Primary Recipient Email', 'Email address where meta-reflections will be sent', 'dean@university.edu', 'email');
+    content.appendChild(primaryEmailContainer);
+    
+    // CC Recipient Email (Optional)
+    const ccEmailContainer = this.createCustomizationField('ccRecipientEmail', 'CC Recipient (Optional)', 'Additional email to copy on reflections', 'professor@university.edu', 'email');
+    content.appendChild(ccEmailContainer);
+    
+    section.appendChild(header);
+    section.appendChild(content);
+    
+    return section;
+  }
+
   submitCustomization() {
     // Get form values
     const institutionName = document.getElementById('institutionName')?.value.trim() || '';
     const institutionShort = document.getElementById('institutionShort')?.value.trim() || '';
     const missionUrl = document.getElementById('missionUrl')?.value.trim() || '';
     const missionLabel = document.getElementById('missionLabel')?.value.trim() || '';
+    const primaryRecipientEmail = document.getElementById('primaryRecipientEmail')?.value.trim() || '';
+    const ccRecipientEmail = document.getElementById('ccRecipientEmail')?.value.trim() || '';
     
     // Update NodeManager config with user input (only if provided)
     if (this.nodeManager && this.nodeManager.config) {
@@ -362,6 +411,19 @@ export class BootScene extends Phaser.Scene {
       }
       if (missionLabel) {
         this.nodeManager.config.institution.missionLinkLabel = missionLabel;
+      }
+      
+      // Initialize email config if it doesn't exist
+      if (!this.nodeManager.config.email) {
+        this.nodeManager.config.email = {};
+      }
+      
+      // Update email config
+      if (primaryRecipientEmail) {
+        this.nodeManager.config.email.primaryRecipient = primaryRecipientEmail;
+      }
+      if (ccRecipientEmail) {
+        this.nodeManager.config.email.ccRecipient = ccRecipientEmail;
       }
       
       // Re-apply placeholders to all nodes with updated config

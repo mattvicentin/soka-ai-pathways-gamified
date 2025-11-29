@@ -51,6 +51,10 @@ export class NodeManager {
         missionUrl: "https://www.soka.edu/about/suas-heritage/mission-and-values",
         missionLinkLabel: "Soka University Mission"
       },
+      email: {
+        primaryRecipient: "", // Empty by default - must be set via customization
+        ccRecipient: ""
+      },
       branding: {
         primaryColor: "#0048B7",
         accentColor: "#FCD43B",

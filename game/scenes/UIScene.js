@@ -1710,9 +1710,41 @@ export class UIScene extends Phaser.Scene {
       
       // Use EmailJS to send email automatically
       // Configuration: EmailJS service credentials
-      const serviceId = 'service_hey9rxt';
-      const templateId = 'template_kfsb8bd';
-      const publicKey = 'rDOH3OJhKhBAJ5tt5';
+      const serviceId = 'service_skkvtpg';
+      const templateId = 'template_jpszbkw';
+      const publicKey = 'CO_pAmc94eFPHWu3n';
+      
+      // Get email config from nodeManager
+      const gameScene = this.scene.get('GameScene');
+      const emailConfig = gameScene?.nodeManager?.config?.email || {};
+      const toEmail = (emailConfig.primaryRecipient || '').trim();
+      const ccEmail = (emailConfig.ccRecipient || '').trim();
+      // From email is set in EmailJS template, not from config
+      
+      // Validate email format (basic check)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      // Check if primary recipient is configured and valid
+      if (!toEmail || !emailRegex.test(toEmail)) {
+        alert('Email recipient not configured or invalid. Please restart the game and configure email settings in the customization modal (expand "Who should receive reflections?" section).');
+        // Re-enable button
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send';
+        }
+        return;
+      }
+      
+      // Validate CC email if provided
+      if (ccEmail && !emailRegex.test(ccEmail)) {
+        alert('CC recipient email is invalid. Please check the email format in the customization settings.');
+        // Re-enable button
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send';
+        }
+        return;
+      }
       
       // Check if EmailJS is configured and available
       if (typeof emailjs !== 'undefined' && serviceId !== 'YOUR_SERVICE_ID') {
@@ -1725,38 +1757,96 @@ export class UIScene extends Phaser.Scene {
           
           emailjs.init(publicKey);
           
-          console.log('Sending email via EmailJS with:', { serviceId, templateId });
+          console.log('Sending email via EmailJS with:', { serviceId, templateId, toEmail, ccEmail });
+          console.log('Email config from nodeManager:', emailConfig);
           
-          // Send email using EmailJS
-          const response = await emailjs.send(serviceId, templateId, {
-            from_email: 'mvicentin@soka.edu',
-            to_email: 'iread@soka.edu',
-            to_email_cc: 'mvicentin@soka.edu',
+          // Double-check email is not empty before sending (safety check)
+          if (!toEmail || toEmail.trim() === '') {
+            throw new Error('Recipient email address is empty. Please configure email settings in the customization modal.');
+          }
+          
+          // Build email parameters - only include ccEmail if provided
+          // Note: from_email is set in EmailJS template configuration, not here
+          // IMPORTANT: EmailJS template must have "To Email" field set to {{email}} in the dashboard
+          // IMPORTANT: EmailJS template must have "Cc" field set to {{email_cc}} in the dashboard (if using CC)
+          const emailParams = {
+            email: toEmail.trim(), // Template uses {{email}}, not {{to_email}}
             subject: 'AI Pathway Feedback',
             message: emailBody,
             protected: protectedVal || '(not provided)',
             risked: riskedVal || '(not provided)',
             learned: learnedVal || '(not provided)',
             next_step: nextStepVal || '(not provided)'
-          });
+          };
+          
+          // Only add CC if provided and valid
+          if (ccEmail && ccEmail.trim() !== '') {
+            emailParams.email_cc = ccEmail.trim(); // Template uses {{email_cc}}, not {{to_email_cc}}
+          }
+          
+          // Log the exact parameters being sent
+          console.log('EmailJS parameters being sent:', emailParams);
+          
+          // Send email using EmailJS
+          const response = await emailjs.send(serviceId, templateId, emailParams);
           
             console.log('Reflection email sent successfully via EmailJS', response);
         } catch (emailError) {
           console.error('EmailJS error details:', emailError);
-          // If template ID error, provide helpful message
-          if (emailError.text && emailError.text.includes('template ID not found')) {
-            alert('Email template not found. Please verify the template ID in EmailJS dashboard and update the code.');
-          } else {
-            alert(`Error sending email: ${emailError.text || emailError.message}. Please check your EmailJS configuration.`);
+          
+          // Provide specific error messages based on error type
+          let errorMessage = 'There was an error sending your reflection.';
+          
+          if (emailError.text) {
+            if (emailError.text.includes('template ID not found')) {
+              errorMessage = 'Email template not found. Please verify the template ID in EmailJS dashboard and update the code.';
+            } else if (emailError.text.includes('recipients address is empty') || emailError.text.includes('recipient')) {
+              // This error usually means the EmailJS template "To Email" field is not set to {{email}}
+              errorMessage = 'EmailJS template configuration error: The "To Email" field in your EmailJS template must be set to {{email}} (not a static email address). Please check your EmailJS template settings.';
+            } else {
+              errorMessage = `Error sending email: ${emailError.text}. Please check your EmailJS configuration.`;
+            }
+          } else if (emailError.message) {
+            errorMessage = emailError.message;
           }
-          throw emailError; // Re-throw to be caught by outer catch
+          
+          alert(errorMessage);
+          
+          // Re-enable button
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+          }
+          
+          // Don't re-throw - we've already handled the error with a user-friendly message
+          return;
         }
       } else {
         // Fallback: Use mailto if EmailJS is not configured
         console.warn('EmailJS not configured, using mailto fallback');
+        
+        // Check if email is configured for mailto fallback
+        if (!toEmail || toEmail.trim() === '') {
+          alert('Email recipient not configured. Please restart the game and configure email settings in the customization modal (expand "Who should receive reflections?" section).');
+          // Re-enable button
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Send';
+          }
+          return;
+        }
+        
         const subject = encodeURIComponent('AI Pathway Feedback');
         const body = encodeURIComponent(emailBody);
-        window.location.href = `mailto:iread@soka.edu,mvicentin@soka.edu?subject=${subject}&body=${body}`;
+        
+        // Build mailto URL with configured recipients
+        let mailtoUrl = `mailto:${toEmail.trim()}`;
+        if (ccEmail && ccEmail.trim() !== '') {
+          mailtoUrl += `,${ccEmail.trim()}`;
+        }
+        mailtoUrl += `?subject=${subject}&body=${body}`;
+        
+        window.location.href = mailtoUrl;
         
         // Re-enable button since mailto opens email client
         if (sendBtn) {
@@ -1780,7 +1870,13 @@ export class UIScene extends Phaser.Scene {
       
     } catch (error) {
       console.error('Error sending reflection email:', error);
-      alert('There was an error sending your reflection. Please try again.');
+      
+      // Only show generic error if it's not an EmailJS error (those are handled above)
+      // Check if error is from EmailJS or if it's a different type of error
+      if (!error.text && !error.message?.includes('EmailJS')) {
+        alert('There was an unexpected error sending your reflection. Please try again.');
+      }
+      // If it's an EmailJS error that wasn't caught above, it will have been handled
       
       // Re-enable button
       if (sendBtn) {
@@ -2284,6 +2380,10 @@ export class UIScene extends Phaser.Scene {
     }
     form.appendChild(missionLabelContainer);
     
+    // Collapsible Email Section
+    const emailSection = this.createCollapsibleEmailSection(gameScene);
+    form.appendChild(emailSection);
+    
     // Button container
     const buttonContainer = document.createElement('div');
     buttonContainer.style.cssText = 'display: flex; gap: 10px; justify-content: center; margin-top: 10px;';
@@ -2419,12 +2519,68 @@ export class UIScene extends Phaser.Scene {
     return container;
   }
 
+  createCollapsibleEmailSection(gameScene) {
+    const section = document.createElement('div');
+    section.style.cssText = 'display: flex; flex-direction: column; gap: 10px; border: 2px solid #000000; border-radius: 4px; padding: 15px; background: #F5E6D3;';
+    
+    // Get current email config values for pre-population
+    const currentEmailConfig = gameScene?.nodeManager?.config?.email || {};
+    
+    // Collapsible header
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;';
+    header.onclick = () => {
+      const isExpanded = content.style.display !== 'none';
+      content.style.display = isExpanded ? 'none' : 'flex';
+      toggleIcon.textContent = isExpanded ? '▶' : '▼';
+    };
+    
+    const headerText = document.createElement('span');
+    headerText.textContent = 'Who should receive reflections?';
+    headerText.style.cssText = 'font-family: \'Inter\', sans-serif; font-size: 14px; font-weight: bold; color: #000000;';
+    
+    const toggleIcon = document.createElement('span');
+    toggleIcon.textContent = '▶';
+    toggleIcon.style.cssText = 'font-family: \'Inter\', sans-serif; font-size: 12px; color: #000000;';
+    
+    header.appendChild(headerText);
+    header.appendChild(toggleIcon);
+    
+    // Collapsible content (initially hidden)
+    const content = document.createElement('div');
+    content.id = 'email-section-content';
+    content.style.cssText = 'display: none; flex-direction: column; gap: 15px; margin-top: 10px;';
+    
+    // Primary Recipient Email
+    const primaryEmailContainer = this.createCustomizationField('primaryRecipientEmail', 'Primary Recipient Email', 'Email address where meta-reflections will be sent', 'dean@university.edu', 'email');
+    if (currentEmailConfig.primaryRecipient) {
+      const input = primaryEmailContainer.querySelector('input');
+      if (input) input.value = currentEmailConfig.primaryRecipient;
+    }
+    content.appendChild(primaryEmailContainer);
+    
+    // CC Recipient Email (Optional)
+    const ccEmailContainer = this.createCustomizationField('ccRecipientEmail', 'CC Recipient (Optional)', 'Additional email to copy on reflections', 'professor@university.edu', 'email');
+    if (currentEmailConfig.ccRecipient) {
+      const input = ccEmailContainer.querySelector('input');
+      if (input) input.value = currentEmailConfig.ccRecipient;
+    }
+    content.appendChild(ccEmailContainer);
+    
+    section.appendChild(header);
+    section.appendChild(content);
+    
+    return section;
+  }
+
   submitCustomization() {
     // Get form values
     const institutionName = document.getElementById('institutionName')?.value.trim() || '';
     const institutionShort = document.getElementById('institutionShort')?.value.trim() || '';
     const missionUrl = document.getElementById('missionUrl')?.value.trim() || '';
     const missionLabel = document.getElementById('missionLabel')?.value.trim() || '';
+    const primaryRecipientEmail = document.getElementById('primaryRecipientEmail')?.value.trim() || '';
+    const ccRecipientEmail = document.getElementById('ccRecipientEmail')?.value.trim() || '';
     
     // Get nodeManager from GameScene
     const gameScene = this.scene.get('GameScene');
@@ -2449,6 +2605,19 @@ export class UIScene extends Phaser.Scene {
       }
       if (missionLabel) {
         gameScene.nodeManager.config.institution.missionLinkLabel = missionLabel;
+      }
+      
+      // Initialize email config if it doesn't exist
+      if (!gameScene.nodeManager.config.email) {
+        gameScene.nodeManager.config.email = {};
+      }
+      
+      // Update email config
+      if (primaryRecipientEmail) {
+        gameScene.nodeManager.config.email.primaryRecipient = primaryRecipientEmail;
+      }
+      if (ccRecipientEmail) {
+        gameScene.nodeManager.config.email.ccRecipient = ccRecipientEmail;
       }
       
       // Re-apply placeholders to all nodes with updated config
