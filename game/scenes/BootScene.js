@@ -10,6 +10,58 @@ export class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    // Unlock audio on any user interaction (click, touch, keypress)
+    // This allows audio to play automatically after loading completes
+    const unlockAudio = () => {
+      if (!this.registry.get('audioUnlocked')) {
+        this.registry.set('audioUnlocked', true);
+        console.log('🔓 Audio unlocked during loading (user interaction detected)');
+        
+        // Create and resume AudioContext during user interaction
+        // This is required for browser autoplay policies
+        try {
+          // Access Phaser's sound system if available
+          if (window.game && window.game.sound) {
+            const soundSystem = window.game.sound;
+            if (soundSystem.context) {
+              if (soundSystem.context.state === 'suspended') {
+                soundSystem.context.resume().then(() => {
+                  console.log('🔓 AudioContext created and resumed during loading');
+                }).catch(err => {
+                  console.warn('Could not resume AudioContext during loading:', err);
+                });
+              } else {
+                console.log('🔓 AudioContext already active');
+              }
+            } else {
+              // Force creation of AudioContext by accessing it
+              // Phaser will create it when we access the sound system
+              console.log('🔓 AudioContext will be created when Phaser initializes');
+            }
+          }
+        } catch (error) {
+          console.warn('Error accessing AudioContext during loading:', error);
+        }
+        
+        // Remove listeners once unlocked
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('keydown', unlockAudio);
+      }
+    };
+    
+    // Listen for user interactions to unlock audio
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
+    
+    // Also unlock when loading screen is clicked/interacted with
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+      loadingScreen.addEventListener('click', unlockAudio, { once: true });
+      loadingScreen.style.cursor = 'pointer'; // Indicate it's interactive
+    }
+    
     // Update loading bar
     this.load.on('progress', (value) => {
       const progressBar = document.getElementById('loading-progress');
@@ -28,6 +80,16 @@ export class BootScene extends Phaser.Scene {
     this.load.image('sprite-professor-neutral', 'assets/sprites/professor-neutral.png');
     this.load.image('sprite-professor-concerned', 'assets/sprites/professor-concerned.png');
     this.load.image('sprite-professor-thoughtful', 'assets/sprites/professor-thoughtful.png');
+    
+    // Load white female character sprites
+    this.load.image('sprite-white-female-neutral', 'assets/sprites/white_female_neutral.png');
+    this.load.image('sprite-white-female-concerned', 'assets/sprites/white_female_concerned.png');
+    this.load.image('sprite-white-female-thoughtful', 'assets/sprites/white_female_thoughtful.png');
+    
+    // Load black male character sprites
+    this.load.image('sprite-black-male-neutral', 'assets/sprites/black_male_neutral.png');
+    this.load.image('sprite-black-male-concerned', 'assets/sprites/black_male_concerned.png');
+    this.load.image('sprite-black-male-thoughtful', 'assets/sprites/black_male_thoughtful.png');
     
     // Load background image
     this.load.image('background-classroom', 'assets/backgrounds/classroom-bg.png');
@@ -64,6 +126,35 @@ export class BootScene extends Phaser.Scene {
       // Smooth fade out loading screen
       const loadingScreen = document.getElementById('loading-screen');
       if (loadingScreen) {
+        // Ensure audio is unlocked before transitioning (user has interacted by now)
+        if (!this.registry.get('audioUnlocked')) {
+          this.registry.set('audioUnlocked', true);
+          console.log('🔓 Audio unlocked - loading screen finished');
+        }
+        
+        // Force AudioContext creation/resume before transitioning
+        // This ensures audio is ready when CharacterSelectionScene starts
+        if (window.game && window.game.sound) {
+          try {
+            const soundSystem = window.game.sound;
+            if (soundSystem.context) {
+              if (soundSystem.context.state === 'suspended') {
+                soundSystem.context.resume().then(() => {
+                  console.log('🔓 AudioContext resumed before scene transition');
+                }).catch(err => {
+                  console.warn('Could not resume AudioContext:', err);
+                });
+              }
+            } else {
+              // Force creation by accessing sound system
+              // Phaser will create AudioContext when we access it
+              console.log('🔓 AudioContext will be created when sound is accessed');
+            }
+          } catch (error) {
+            console.warn('Error accessing sound system:', error);
+          }
+        }
+        
         loadingScreen.style.transition = 'opacity 0.6s ease-out';
         loadingScreen.style.opacity = '0';
         setTimeout(() => {
@@ -71,10 +162,19 @@ export class BootScene extends Phaser.Scene {
         }, 600);
       }
       
-      // Show customization modal after loading screen fades
-      this.time.delayedCall(700, () => {
-        this.showCustomizationModal();
-      });
+      // Start character selection scene after loading screen fades
+      // Use setTimeout instead of delayedCall to avoid timer cancellation when scene stops
+      // Store reference to scene manager before setTimeout
+      const sceneManager = this.scene;
+      setTimeout(() => {
+        console.log('BootScene: Starting CharacterSelectionScene...');
+        try {
+          sceneManager.start('CharacterSelectionScene');
+          console.log('BootScene: CharacterSelectionScene started successfully');
+        } catch (error) {
+          console.error('BootScene: Error starting CharacterSelectionScene:', error);
+        }
+      }, 700);
       
     } catch (error) {
       console.error('Failed to load nodes:', error);

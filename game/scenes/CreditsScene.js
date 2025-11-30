@@ -164,37 +164,42 @@ export class CreditsScene extends Phaser.Scene {
     // Fade to black using camera fade
     this.cameras.main.fadeOut(1000, 0, 0, 0);
     
-    // When fade completes, restart scenes first, then show customization modal
+    // When fade completes, return to character selection interface
     this.cameras.main.once('camerafadeoutcomplete', () => {
-      // Get GameScene to access nodeManager
+      // Get GameScene to stop music and reset state
       const gameScene = this.scene.get('GameScene');
       
+      // Stop music before transitioning
+      if (gameScene && gameScene.audioManager) {
+        gameScene.audioManager.stopMusic();
+        console.log('Music stopped after credits scene');
+      }
+      
+      // Reset node manager to D1
       if (gameScene && gameScene.nodeManager) {
-        // Reset to D1 but don't load it yet
         gameScene.nodeManager.restart();
         window.location.hash = 'node=D1';
-        
-        // Set flag to prevent auto-loading node
-        gameScene.skipAutoLoad = true;
-        
-        // Stop credits scene
-        this.scene.stop('CreditsScene');
-        
-        // Set flag to show customization modal when UIScene is created
-        // Store in window object to persist across scene restarts
-        window.showCustomizationAfterCredits = true;
-        console.log('CreditsScene: Set showCustomizationAfterCredits flag to true (window)');
-        
-        // Also set in registry as backup
-        this.registry.set('showCustomizationAfterCredits', true);
-        
-        // Restart game scenes with cameras already faded out
-        this.scene.start('GameScene');
-        this.scene.start('UIScene');
-      } else {
-        // Fallback: restart directly
-        this.restartGame();
       }
+      
+      // Clear customization flag so it shows again after character selection
+      this.registry.set('customizationShown', false);
+      window.showCustomizationAfterCredits = false;
+      this.registry.set('showCustomizationAfterCredits', false);
+      
+      // Stop all current scenes
+      this.scene.stop('CreditsScene');
+      if (gameScene) {
+        this.scene.stop('GameScene');
+      }
+      const uiScene = this.scene.get('UIScene');
+      if (uiScene) {
+        this.scene.stop('UIScene');
+      }
+      
+      console.log('CreditsScene: Transitioning to character selection');
+      
+      // Go to character selection scene
+      this.scene.start('CharacterSelectionScene');
     });
   }
 

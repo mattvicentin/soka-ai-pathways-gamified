@@ -123,12 +123,15 @@ export class GameScene extends Phaser.Scene {
     });
     
     // Wait for UI scene to be ready before loading first node
-    // Skip auto-load if flag is set (e.g., when coming from credits scene)
+    // Skip auto-load if flag is set (e.g., when coming from credits scene or character selection)
+    this.skipAutoLoad = this.skipAutoLoad || this.registry.get('skipAutoLoad') || false;
     this.time.delayedCall(100, () => {
       if (!this.skipAutoLoad) {
         this.loadCurrentNode();
       } else {
         console.log('Skipping auto-load, waiting for customization modal');
+        // Clear the registry flag
+        this.registry.set('skipAutoLoad', false);
       }
     });
     
@@ -367,15 +370,43 @@ export class GameScene extends Phaser.Scene {
     // To show only bottom half: position sprite center slightly above screen bottom
     const spriteY = height - 50; // Move up 50 pixels from bottom
     
-    this.currentSprite = this.add.sprite(spriteX, spriteY, 'sprite-professor-neutral');
-    // Scale increased by 20%: 0.408 * 1.2 = 0.4896
-    this.currentSprite.setScale(0.4896); // Increased by 20%
+    // Get selected character from registry (default to professor if not selected)
+    const selectedCharacter = this.registry.get('selectedCharacter') || 'professor';
+    const baseSpriteKey = this.getCharacterSpriteKey(selectedCharacter, 'neutral');
+    
+    this.currentSprite = this.add.sprite(spriteX, spriteY, baseSpriteKey);
+    
+    // Use fixed display size to ensure all characters appear the same size
+    // regardless of their base sprite dimensions
+    // Target size: 1024px base sprite * 0.4896 scale = ~501px
+    const targetDisplaySize = 501;
+    this.currentSprite.setDisplaySize(targetDisplaySize, targetDisplaySize);
     this.currentSprite.setDepth(0);
     // Start visible - camera fade will handle the transition
     this.currentSprite.setAlpha(1);
     
+    // Store selected character for emotion updates
+    this.selectedCharacter = selectedCharacter;
+    
+    // Store target display size for use when texture changes
+    this.characterDisplaySize = targetDisplaySize;
+    
     // Keep origin at center (0.5, 0.5) - default
     // This way, positioning slightly above bottom shows bottom half
+  }
+  
+  getCharacterSpriteKey(characterKey, emotion) {
+    // Map character key and emotion to sprite key
+    let characterPrefix;
+    if (characterKey === 'white_female') {
+      characterPrefix = 'sprite-white-female';
+    } else if (characterKey === 'black_male') {
+      characterPrefix = 'sprite-black-male';
+    } else {
+      characterPrefix = 'sprite-professor'; // Default to professor
+    }
+    const emotionSuffix = emotion || 'neutral';
+    return `${characterPrefix}-${emotionSuffix}`;
   }
 
   loadCurrentNode() {
@@ -448,27 +479,36 @@ export class GameScene extends Phaser.Scene {
   }
 
   updateCharacterEmotion(pathway) {
-    // Choose sprite based on pathway/emotion
-    let spriteKey = 'sprite-professor-neutral';
+    // Get selected character (default to professor if not set)
+    const selectedCharacter = this.selectedCharacter || this.registry.get('selectedCharacter') || 'professor';
+    
+    // Choose emotion based on pathway
+    let emotion = 'neutral';
     
     switch(pathway) {
       case 'prohibitive':
-        spriteKey = 'sprite-professor-concerned';
+        emotion = 'concerned';
         break;
       case 'ignore':
-        spriteKey = 'sprite-professor-concerned';
+        emotion = 'concerned';
         break;
       case 'balanced':
       case 'embracing':
       case 'collaborative':
-        spriteKey = 'sprite-professor-thoughtful';
+        emotion = 'thoughtful';
         break;
       default:
-        spriteKey = 'sprite-professor-neutral';
+        emotion = 'neutral';
     }
+    
+    // Get sprite key for selected character and emotion
+    const spriteKey = this.getCharacterSpriteKey(selectedCharacter, emotion);
     
     // Only animate sprite change if the sprite actually needs to change
     if (this.currentSprite.texture.key !== spriteKey) {
+      // Store target display size to preserve it
+      const targetSize = this.characterDisplaySize || 501;
+      
       // Smooth fade-out, change texture, then fade-in
       this.tweens.add({
         targets: this.currentSprite,
@@ -477,6 +517,8 @@ export class GameScene extends Phaser.Scene {
         ease: 'Power2',
         onComplete: () => {
           this.currentSprite.setTexture(spriteKey);
+          // Ensure display size is preserved for consistent character size
+          this.currentSprite.setDisplaySize(targetSize, targetSize);
           this.tweens.add({
             targets: this.currentSprite,
             alpha: 1,

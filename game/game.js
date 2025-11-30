@@ -3,6 +3,7 @@
  */
 
 import { BootScene } from './scenes/BootScene.js';
+import { CharacterSelectionScene } from './scenes/CharacterSelectionScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { UIScene } from './scenes/UIScene.js';
 import { CreditsScene } from './scenes/CreditsScene.js';
@@ -21,7 +22,7 @@ const config = {
   loader: {
     baseURL: './'  // Ensures asset paths work correctly on GitHub Pages
   },
-  scene: [BootScene, GameScene, UIScene, CreditsScene],
+  scene: [BootScene, CharacterSelectionScene, GameScene, UIScene, CreditsScene],
   pixelArt: false, // Set to true if using actual pixel art sprites
   physics: {
     default: 'arcade',

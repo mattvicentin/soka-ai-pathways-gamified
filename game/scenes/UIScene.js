@@ -49,10 +49,20 @@ export class UIScene extends Phaser.Scene {
     // Get nodeManager from registry
     this.nodeManager = this.registry.get('nodeManager');
     
-    // Check if we should show customization modal after credits
+    // Check if we should show customization modal (after credits OR after character selection on first load)
     // Check both window object (persists) and registry (backup)
-    const showCustomization = window.showCustomizationAfterCredits || this.registry.get('showCustomizationAfterCredits');
-    console.log('UIScene create - showCustomization flag:', showCustomization, '(window:', window.showCustomizationAfterCredits, ', registry:', this.registry.get('showCustomizationAfterCredits'), ')');
+    const showCustomizationAfterCredits = window.showCustomizationAfterCredits || this.registry.get('showCustomizationAfterCredits');
+    
+    // Also check if we need to show customization after character selection (first time, default config)
+    const nodeManager = this.registry.get('nodeManager');
+    const needsCustomization = nodeManager && nodeManager.config && 
+                               nodeManager.config.institution && 
+                               nodeManager.config.institution.name === "Soka University of America" &&
+                               !this.registry.get('customizationShown');
+    
+    const showCustomization = showCustomizationAfterCredits || needsCustomization;
+    console.log('UIScene create - showCustomization flag:', showCustomization, '(afterCredits:', showCustomizationAfterCredits, ', needsCustomization:', needsCustomization, ')');
+    
     if (showCustomization) {
       // Don't clear flags yet - wait until modal is actually shown
       // Wait a bit for scene to fully initialize, then show modal
@@ -64,6 +74,7 @@ export class UIScene extends Phaser.Scene {
           // Clear flags now
           window.showCustomizationAfterCredits = false;
           this.registry.set('showCustomizationAfterCredits', false);
+          this.registry.set('customizationShown', true); // Mark as shown
           try {
             console.log('Calling showCustomizationModal()...');
             this.showCustomizationModal();
@@ -2231,8 +2242,39 @@ export class UIScene extends Phaser.Scene {
   restart() {
     console.log('Restarting game...');
     
-    // Show credits scene first, then customization modal after credits
-    this.showCreditsScene();
+    // Stop music before transitioning
+    const gameScene = this.scene.get('GameScene');
+    if (gameScene && gameScene.audioManager) {
+      gameScene.audioManager.stopMusic();
+      console.log('Music stopped on restart');
+    }
+    
+    // Clear customization flag so it shows again after character selection
+    this.registry.set('customizationShown', false);
+    window.showCustomizationAfterCredits = false;
+    this.registry.set('showCustomizationAfterCredits', false);
+    
+    // Reset node manager to D1
+    if (gameScene && gameScene.nodeManager) {
+      gameScene.nodeManager.restart();
+      window.location.hash = 'node=D1';
+    }
+    
+    // Fade out both scenes simultaneously
+    if (gameScene) {
+      gameScene.cameras.main.fadeOut(500, 0, 0, 0);
+    }
+    this.cameras.main.fadeOut(500, 0, 0, 0);
+    
+    // When fade completes, go to character selection scene
+    this.cameras.main.once('camerafadeoutcomplete', () => {
+      console.log('Fade to black complete, returning to character selection');
+      // Stop current scenes
+      this.scene.stop('GameScene');
+      this.scene.stop('UIScene');
+      // Start character selection scene
+      this.scene.start('CharacterSelectionScene');
+    });
   }
   
   showCreditsScene() {
@@ -2646,20 +2688,22 @@ export class UIScene extends Phaser.Scene {
     const gameScene = this.scene.get('GameScene');
     
     if (gameScene && gameScene.nodeManager) {
+      // Reset node manager to D1
+      gameScene.nodeManager.restart();
+      window.location.hash = 'node=D1';
+      
       // Clear the skip flag so node will load
       gameScene.skipAutoLoad = false;
       
       // Reset cameras to fully visible before restarting
       if (gameScene.cameras && gameScene.cameras.main) {
         gameScene.cameras.main.setAlpha(1);
-        gameScene.cameras.main.clearTint();
       }
       if (this.cameras && this.cameras.main) {
         this.cameras.main.setAlpha(1);
-        this.cameras.main.clearTint();
       }
       
-      // Load the current node (D1)
+      // Load D1 node
       gameScene.loadCurrentNode();
       
       // Wait a frame for scenes to initialize, then fade in
