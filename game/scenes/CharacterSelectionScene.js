@@ -235,8 +235,8 @@ export class CharacterSelectionScene extends Phaser.Scene {
         
         // Adjust scale for black_female_neutral sprite to match other characters
         if (char.spriteKey === 'sprite-black-female-neutral') {
-          // Increase size to match visual appearance of other characters
-          scale = scale * 1.4; // Increase by 40% to match other characters
+          // Increase size to match visual appearance of other characters (reduced by 5%)
+          scale = scale * 1.33; // 1.4 * 0.95 = 1.33 (40% increase reduced by 5%)
           console.log(`Black female neutral sprite detected in selection - applying size adjustment (scale: ${scale.toFixed(4)})`);
         }
         
