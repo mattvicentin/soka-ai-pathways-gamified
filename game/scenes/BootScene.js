@@ -91,6 +91,11 @@ export class BootScene extends Phaser.Scene {
     this.load.image('sprite-black-male-concerned', 'assets/sprites/black_male_concerned.png');
     this.load.image('sprite-black-male-thoughtful', 'assets/sprites/black_male_thoughtful.png');
     
+    // Load black female character sprites
+    this.load.image('sprite-black-female-neutral', 'assets/sprites/black_female_neutral.png');
+    this.load.image('sprite-black-female-concerned', 'assets/sprites/black_female_concerned.png');
+    this.load.image('sprite-black-female-thoughtful', 'assets/sprites/black_female_toughtful.png');
+    
     // Load background image
     this.load.image('background-classroom', 'assets/backgrounds/classroom-bg.png');
     

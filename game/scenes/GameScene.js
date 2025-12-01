@@ -376,20 +376,97 @@ export class GameScene extends Phaser.Scene {
     
     this.currentSprite = this.add.sprite(spriteX, spriteY, baseSpriteKey);
     
-    // Use fixed display size to ensure all characters appear the same size
-    // regardless of their base sprite dimensions
-    // Target size: 1024px base sprite * 0.4896 scale = ~501px
-    const targetDisplaySize = 501;
-    this.currentSprite.setDisplaySize(targetDisplaySize, targetDisplaySize);
+    // Use fixed target height to ensure all characters appear the same size
+    // regardless of their base sprite dimensions, while maintaining aspect ratio
+    // Target height: 501px (based on 1024px base sprite * 0.4896 scale)
+    const targetHeight = 501;
+    
+    // Calculate scale based on sprite's frame dimensions
+    // Use a more reliable method to get texture dimensions
+    const calculateScale = () => {
+      let spriteHeight = 0;
+      
+      // Method 1: Try to get from texture source (most reliable)
+      const texture = this.textures.get(baseSpriteKey);
+      if (texture) {
+        // Try texture source first (original image dimensions)
+        if (texture.source && texture.source.length > 0) {
+          const source = texture.source[0];
+          if (source && source.height) {
+            spriteHeight = source.height;
+          }
+        }
+        
+        // Method 2: Try texture frames
+        if (spriteHeight === 0 && texture.frames) {
+          if (texture.frames.__BASE && texture.frames.__BASE.height) {
+            spriteHeight = texture.frames.__BASE.height;
+          } else {
+            const frameKeys = Object.keys(texture.frames);
+            if (frameKeys.length > 0) {
+              const firstFrame = texture.frames[frameKeys[0]];
+              if (firstFrame && firstFrame.height) {
+                spriteHeight = firstFrame.height;
+              }
+            }
+          }
+        }
+      }
+      
+      // Method 3: Try sprite's frame property
+      if (spriteHeight === 0 && this.currentSprite.frame) {
+        spriteHeight = this.currentSprite.frame.height;
+      }
+      
+      // Method 4: Try sprite's height property (may be scaled already)
+      if (spriteHeight === 0) {
+        spriteHeight = this.currentSprite.height;
+        // If height is already scaled, try to get original
+        if (this.currentSprite.scaleY !== 1 && this.currentSprite.scaleY > 0) {
+          spriteHeight = spriteHeight / this.currentSprite.scaleY;
+        }
+      }
+      
+      // Final fallback: assume standard sprite size
+      if (spriteHeight === 0 || spriteHeight < 100) {
+        spriteHeight = 1024; // Default assumption
+        console.warn(`Could not determine sprite height for ${baseSpriteKey}, assuming 1024px`);
+      }
+      
+      // Calculate scale to achieve target height
+      let scale = targetHeight / spriteHeight;
+      
+      // Adjust scale for black_male_thoughtful sprite due to different image cropping
+      // Increase size by 40% to match visual appearance of other characters
+      if (baseSpriteKey === 'sprite-black-male-thoughtful') {
+        scale = scale * 1.4; // Increase by 40% to compensate for different cropping
+        console.log(`Black male thoughtful sprite detected - applying size adjustment (scale: ${scale.toFixed(4)})`);
+      }
+      
+      // Adjust scale for black_female sprites - increase by 20% for in-game experience
+      if (baseSpriteKey.startsWith('sprite-black-female-')) {
+        scale = scale * 1.2; // Increase by 20% to match visual appearance of other characters
+        console.log(`Black female sprite detected - applying size adjustment (scale: ${scale.toFixed(4)})`);
+      }
+      
+      this.currentSprite.setScale(scale);
+      // Store target height and scale for use when texture changes
+      this.characterTargetHeight = targetHeight;
+      this.characterScale = scale;
+      console.log(`Character ${baseSpriteKey}: original height=${spriteHeight}px, target=${targetHeight}px, scale=${scale.toFixed(4)}`);
+    };
+    
+    // Calculate scale - try immediately and retry if needed
+    calculateScale();
+    // Retry after a short delay to ensure texture is fully loaded
+    this.time.delayedCall(100, calculateScale);
+    
     this.currentSprite.setDepth(0);
     // Start visible - camera fade will handle the transition
     this.currentSprite.setAlpha(1);
     
     // Store selected character for emotion updates
     this.selectedCharacter = selectedCharacter;
-    
-    // Store target display size for use when texture changes
-    this.characterDisplaySize = targetDisplaySize;
     
     // Keep origin at center (0.5, 0.5) - default
     // This way, positioning slightly above bottom shows bottom half
@@ -402,6 +479,8 @@ export class GameScene extends Phaser.Scene {
       characterPrefix = 'sprite-white-female';
     } else if (characterKey === 'black_male') {
       characterPrefix = 'sprite-black-male';
+    } else if (characterKey === 'black_female') {
+      characterPrefix = 'sprite-black-female';
     } else {
       characterPrefix = 'sprite-professor'; // Default to professor
     }
@@ -506,8 +585,8 @@ export class GameScene extends Phaser.Scene {
     
     // Only animate sprite change if the sprite actually needs to change
     if (this.currentSprite.texture.key !== spriteKey) {
-      // Store target display size to preserve it
-      const targetSize = this.characterDisplaySize || 501;
+      // Store target height to ensure consistent sizing
+      const targetHeight = this.characterTargetHeight || 501;
       
       // Smooth fade-out, change texture, then fade-in
       this.tweens.add({
@@ -517,8 +596,79 @@ export class GameScene extends Phaser.Scene {
         ease: 'Power2',
         onComplete: () => {
           this.currentSprite.setTexture(spriteKey);
-          // Ensure display size is preserved for consistent character size
-          this.currentSprite.setDisplaySize(targetSize, targetSize);
+          
+          // Recalculate scale based on new sprite's texture dimensions
+          // Use fixed target height so all characters appear the same size
+          const targetHeight = this.characterTargetHeight || 501;
+          let newSpriteHeight = 0;
+          
+          // Method 1: Try texture source (most reliable)
+          const texture = this.textures.get(spriteKey);
+          if (texture) {
+            if (texture.source && texture.source.length > 0) {
+              const source = texture.source[0];
+              if (source && source.height) {
+                newSpriteHeight = source.height;
+              }
+            }
+            
+            // Method 2: Try texture frames
+            if (newSpriteHeight === 0 && texture.frames) {
+              if (texture.frames.__BASE && texture.frames.__BASE.height) {
+                newSpriteHeight = texture.frames.__BASE.height;
+              } else {
+                const frameKeys = Object.keys(texture.frames);
+                if (frameKeys.length > 0) {
+                  const firstFrame = texture.frames[frameKeys[0]];
+                  if (firstFrame && firstFrame.height) {
+                    newSpriteHeight = firstFrame.height;
+                  }
+                }
+              }
+            }
+          }
+          
+          // Method 3: Try sprite's frame property
+          if (newSpriteHeight === 0 && this.currentSprite.frame) {
+            newSpriteHeight = this.currentSprite.frame.height;
+          }
+          
+          // Method 4: Try sprite's height (may need to account for current scale)
+          if (newSpriteHeight === 0) {
+            newSpriteHeight = this.currentSprite.height;
+            if (this.currentSprite.scaleY !== 1 && this.currentSprite.scaleY > 0) {
+              newSpriteHeight = newSpriteHeight / this.currentSprite.scaleY;
+            }
+          }
+          
+          // Final fallback: assume standard size
+          if (newSpriteHeight === 0 || newSpriteHeight < 100) {
+            newSpriteHeight = 1024;
+            console.warn(`Could not determine sprite height for ${spriteKey}, assuming 1024px`);
+          }
+          
+          // Calculate scale to achieve target height
+          let newScale = targetHeight / newSpriteHeight;
+          
+          // Adjust scale for black_male_thoughtful sprite due to different image cropping
+          // Increase size by 40% to match visual appearance of other characters
+          if (spriteKey === 'sprite-black-male-thoughtful') {
+            newScale = newScale * 1.4; // Increase by 40% to compensate for different cropping
+            console.log(`Black male thoughtful sprite detected - applying size adjustment (scale: ${newScale.toFixed(4)})`);
+          }
+          
+          // Adjust scale for black_female sprites - increase by 20% for in-game experience
+          if (spriteKey.startsWith('sprite-black-female-')) {
+            newScale = newScale * 1.2; // Increase by 20% to match visual appearance of other characters
+            console.log(`Black female sprite detected - applying size adjustment (scale: ${newScale.toFixed(4)})`);
+          }
+          
+          this.currentSprite.setScale(newScale);
+          // Update stored scale and target height
+          this.characterScale = newScale;
+          this.characterTargetHeight = targetHeight;
+          console.log(`Character ${spriteKey}: original height=${newSpriteHeight}px, target=${targetHeight}px, scale=${newScale.toFixed(4)}`);
+          
           this.tweens.add({
             targets: this.currentSprite,
             alpha: 1,

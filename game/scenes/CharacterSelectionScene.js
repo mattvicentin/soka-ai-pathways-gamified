@@ -175,14 +175,14 @@ export class CharacterSelectionScene extends Phaser.Scene {
     const startY = gridStartY + cellHeight / 2; // Center of first row
     
     // Character options - 2x2 grid layout
-    // Top row: placeholder (left), black_male (right)
+    // Top row: black_female (left), black_male (right)
     // Bottom row: professor (left), white_female (right)
     const characters = [
-      // Top-left: Placeholder
+      // Top-left: Black Female
       {
-        key: 'character4',
-        name: 'Character 4',
-        spriteKey: null // Will be added later
+        key: 'black_female',
+        name: 'Black Female',
+        spriteKey: 'sprite-black-female-neutral'
       },
       // Top-right: Black Male
       {
@@ -228,14 +228,26 @@ export class CharacterSelectionScene extends Phaser.Scene {
       // Character sprite (if available)
       if (char.spriteKey && this.textures.exists(char.spriteKey)) {
         const sprite = this.add.sprite(x, y, char.spriteKey);
-        // Use setDisplaySize to ensure consistent sizing across all characters
-        sprite.setDisplaySize(targetSpriteSize, targetSpriteSize);
+        // Use scale to ensure consistent sizing while maintaining aspect ratio
+        // Calculate scale based on sprite's height to prevent compression
+        const spriteHeight = sprite.height;
+        let scale = targetSpriteSize / spriteHeight;
+        
+        // Adjust scale for black_female_neutral sprite to match other characters
+        if (char.spriteKey === 'sprite-black-female-neutral') {
+          // Increase size to match visual appearance of other characters
+          scale = scale * 1.4; // Increase by 40% to match other characters
+          console.log(`Black female neutral sprite detected in selection - applying size adjustment (scale: ${scale.toFixed(4)})`);
+        }
+        
+        sprite.setScale(scale);
         sprite.setOrigin(0.5, 0.5);
         sprite.setDepth(11);
         
-        // Store sprite reference
+        // Store sprite reference and scale
         container.sprite = sprite;
         container.targetSize = targetSpriteSize;
+        container.spriteScale = scale;
       } else {
         // Placeholder text for characters not yet added - pixelated font
         const placeholder = this.add.text(x, y, 'Coming\nSoon', {
@@ -253,10 +265,10 @@ export class CharacterSelectionScene extends Phaser.Scene {
       container.on('pointerover', () => {
         container.setFillStyle(0x000000, 0.8);
         container.setStrokeStyle(4, 0xFFFFFF, 1);
-        if (container.sprite && container.targetSize) {
-          // Slightly larger on hover (10% increase)
-          const hoverSize = container.targetSize * 1.1;
-          container.sprite.setDisplaySize(hoverSize, hoverSize);
+        if (container.sprite && container.spriteScale) {
+          // Slightly larger on hover (10% increase in scale)
+          const hoverScale = container.spriteScale * 1.1;
+          container.sprite.setScale(hoverScale);
         }
         
         // Play button click sound on hover (only for selectable characters)
@@ -272,9 +284,9 @@ export class CharacterSelectionScene extends Phaser.Scene {
       container.on('pointerout', () => {
         container.setFillStyle(0x000000, 0.7);
         container.setStrokeStyle(3, 0xFFFFFF, 1);
-        if (container.sprite && container.targetSize) {
-          // Return to original size
-          container.sprite.setDisplaySize(container.targetSize, container.targetSize);
+        if (container.sprite && container.spriteScale) {
+          // Return to original scale
+          container.sprite.setScale(container.spriteScale);
         }
       });
       
