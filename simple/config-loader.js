@@ -59,7 +59,7 @@ const DEFAULT_CONFIG = {
 
 export async function loadConfig() {
   try {
-    const response = await fetch('./config/config.json', { cache: 'no-store' });
+    const response = await fetch('../config/config.json', { cache: 'no-store' });
     if (!response.ok) {
       console.log('ℹ️  No custom config found, using Soka defaults');
       return DEFAULT_CONFIG;
@@ -105,7 +105,7 @@ export async function loadNodesWithConfig() {
     const config = await loadConfig();
     
     // Load base nodes template
-    const baseResponse = await fetch('./data/nodes-base.json', { cache: 'no-store' });
+    const baseResponse = await fetch('../data/nodes-base.json', { cache: 'no-store' });
     if (!baseResponse.ok) {
       throw new Error('Failed to load base nodes');
     }
@@ -114,7 +114,7 @@ export async function loadNodesWithConfig() {
     // Try to load customizations (optional)
     let customNodes = {};
     try {
-      const customResponse = await fetch('./data/custom-nodes.json', { cache: 'no-store' });
+      const customResponse = await fetch('../data/custom-nodes.json', { cache: 'no-store' });
       if (customResponse.ok) {
         customNodes = await customResponse.json();
         console.log(`ℹ️  Loaded ${Object.keys(customNodes).length} node customizations`);

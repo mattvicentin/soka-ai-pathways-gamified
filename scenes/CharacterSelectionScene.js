@@ -308,6 +308,11 @@ export class CharacterSelectionScene extends Phaser.Scene {
             }
           }
           
+          // Hide web version button before transitioning
+          if (this.webVersionButton) {
+            this.webVersionButton.setVisible(false);
+          }
+          
           // Fade out and transition to game
           // GameScene will launch UIScene, which will show customization modal if needed
           this.cameras.main.fadeOut(500, 0, 0, 0);
@@ -339,6 +344,37 @@ export class CharacterSelectionScene extends Phaser.Scene {
       
       characterButtons.push(container);
     });
+    
+    // Add "Web Version" button - only visible during character selection
+    // width and height are already declared at the top of create()
+    const webVersionBtn = this.add.text(
+      width - 20,
+      height - 20,
+      '📄 Web Version',
+      {
+        fontFamily: 'Arial',
+        fontSize: '14px',
+        color: '#FFFFFF',
+        backgroundColor: '#0048B7',
+        padding: { x: 12, y: 8 },
+        align: 'right'
+      }
+    );
+    webVersionBtn.setOrigin(1, 1); // Right-bottom aligned
+    webVersionBtn.setDepth(100); // Above other elements
+    webVersionBtn.setInteractive({ useHandCursor: true });
+    webVersionBtn.on('pointerdown', () => {
+      window.location.href = './simple/';
+    });
+    webVersionBtn.on('pointerover', () => {
+      webVersionBtn.setBackgroundColor('#66B0FF');
+    });
+    webVersionBtn.on('pointerout', () => {
+      webVersionBtn.setBackgroundColor('#0048B7');
+    });
+    
+    // Store reference so we can hide it when transitioning
+    this.webVersionButton = webVersionBtn;
     
       // Start with scene visible (no fade needed since we're coming from loading screen)
       this.cameras.main.setAlpha(1);

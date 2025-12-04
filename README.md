@@ -25,44 +25,50 @@ The explorer includes:
 - **Meta-reflection endpoint** connecting outcomes to institutional mission
 - **Reflection form** to capture faculty insights
 
-## 🎮 Game Version (NEW!)
+## 🎮 Main Experience
 
-**Try the visual novel-style game version!** We've created a proof-of-concept gamified experience:
+**The game version is now the main experience!** This visual novel-style interface provides:
 
 - **Visual novel interface** with dialogue boxes and typewriter effects
+- **Character selection** - choose from multiple characters
 - **Character sprites** that react to different pathways
 - **Dynamic backgrounds** that change based on your choices
-- **Same great content** - all 23 nodes from the main app
-- **[🎮 Play the Game Version](https://mattvicentin.github.io/soka-ai-pathways-gamified/game/)** or click the "Game Version (Beta)" button on the main site
+- **Background music and sound effects** for immersive experience
+- **Same great content** - all 23 nodes from the original app
+- **[🎮 Play Now](https://mattvicentin.github.io/soka-ai-pathways-gamified/)** - The game version is the default experience
 
-Perfect for a more immersive, game-like exploration of AI pedagogy approaches. See [`game/README.md`](./game/README.md) for details.
+A simplified web version is also available via the "Web Version" button for users who prefer a text-only interface.
 
 ---
 
 ## Features
+- **Visual novel game interface** (main experience) with Phaser.js
+- **Simplified web version** available for text-only preference
 - Single‑page app with hash routing (`/#node=...`), no backend
-- Content is **data‑driven** via `nodes.json`
+- Content is **data‑driven** via `data/nodes-base.json`
 - Scene pages show **narrative**, **resources**, and **choices**
 - Works on **GitHub Pages**; zero build steps
-- Fully responsive design with Tailwind CSS
-- **NEW:** Visual novel game version available
+- Character selection, dynamic backgrounds, and immersive audio
 
 ## Local Preview
-Just open `index.html` in your browser (or use a simple static server).
+
+Run a local server (Python 3):
 
 ```bash
-# optional
-python3 -m http.server 8080
-# then visit http://localhost:8080
+python3 -m http.server 8000
 ```
+
+Then open: `http://localhost:8000` (game version - main experience)
+
+Or for the simplified web version: `http://localhost:8000/simple/`
 
 ## Live Site
 
 **🌐 [https://mattvicentin.github.io/soka-ai-pathways-gamified/](https://mattvicentin.github.io/soka-ai-pathways-gamified/)**
 
-Start at the dilemma (`/#node=D1`) and follow your pedagogical instincts through realistic classroom scenarios.
+Start at the dilemma (`/#node=D1`) and follow your pedagogical instincts through realistic classroom scenarios. The game version is now the default experience.
 
-**🎮 [Play the Game Version](https://mattvicentin.github.io/soka-ai-pathways-gamified/game/)**
+**📄 [Simplified Web Version](https://mattvicentin.github.io/soka-ai-pathways-gamified/simple/)**
 
 ## Project Structure
 
