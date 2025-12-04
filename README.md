@@ -8,7 +8,7 @@ Originally designed for **Soka University of America**'s 2025 Faculty Workshop, 
 
 ## Overview
 
-This interactive narrative helps faculty explore the tensions, trade-offs, and possibilities of different AI policies through realistic classroom scenarios. Each pathway offers distinct perspectives on integrity, creativity, equity, trust, and Soka's mission to foster wisdom, courage, and compassion.
+This interactive narrative helps faculty explore the tensions, trade-offs, and possibilities of different AI policies through realistic classroom scenarios. Each pathway offers distinct perspectives on integrity, creativity, equity, trust, and your institution's mission. The content has been generalized for universal use and can be customized for any institution through the built-in customization interface.
 
 ### Five Pathways
 
@@ -23,7 +23,10 @@ The explorer includes:
 - **54 curated academic resources** (EDUCAUSE, UNESCO, Harvard GSE, OECD, Inside Higher Ed, and more)
 - **Path-switching options** to explore different pedagogical pivots
 - **Meta-reflection endpoint** connecting outcomes to institutional mission
-- **Reflection form** to capture faculty insights
+- **Reflection form** with EmailJS integration to capture and send faculty insights
+- **Institution customization** - personalize the experience for your institution
+- **Character selection** - choose from multiple character options
+- **Credits scene** - transition scene after completing the experience
 
 ## 🎮 Main Experience
 
@@ -42,13 +45,20 @@ A simplified web version is also available via the "Web Version" button for user
 ---
 
 ## Features
-- **Visual novel game interface** (main experience) with Phaser.js
+- **Visual novel game interface** (main experience) built with Phaser.js
+- **Character selection** - choose from multiple character options at game start
+- **Character sprites** that change emotion based on pathway choices
+- **Dynamic backgrounds** that adapt to your choices
+- **Immersive audio** - background music and sound effects with volume controls
+- **Typewriter effect** - animated text display with blinking cursor
+- **Resources modal** - access curated academic resources during gameplay
+- **Customization interface** - personalize institution name, mission, values, and email recipients
+- **Meta-reflection form** - capture and email faculty insights via EmailJS
+- **Credits scene** - transition scene after completing the experience
 - **Simplified web version** available for text-only preference
 - Single‑page app with hash routing (`/#node=...`), no backend
 - Content is **data‑driven** via `data/nodes-base.json`
-- Scene pages show **narrative**, **resources**, and **choices**
 - Works on **GitHub Pages**; zero build steps
-- Character selection, dynamic backgrounds, and immersive audio
 
 ## Local Preview
 
@@ -73,22 +83,42 @@ Start at the dilemma (`/#node=D1`) and follow your pedagogical instincts through
 ## Project Structure
 
 ```
-soka-ai-pathways-site/
-├── index.html              # Main HTML with Tailwind CSS
-├── app.js                  # JavaScript for navigation and rendering
-├── nodes.json              # All narrative content and resources
-├── README.md               # This file
-└── [pathway].md            # Source markdown files with full narratives
+soka-ai-pathways-gamified/
+├── index.html              # Game entry point (main experience)
+├── game.js                 # Phaser game initialization
+├── scenes/                 # Phaser game scenes
+│   ├── BootScene.js        # Asset loading and initialization
+│   ├── CharacterSelectionScene.js  # Character selection interface
+│   ├── GameScene.js        # Main game scene with backgrounds and sprites
+│   ├── UIScene.js          # Dialogue box, choices, and UI elements
+│   └── CreditsScene.js     # End credits transition scene
+├── managers/               # Game managers
+│   ├── NodeManager.js      # Loads and processes nodes with placeholders
+│   └── AudioManager.js     # Background music and sound effects
+├── assets/                 # Game assets
+│   ├── sprites/            # Character and UI sprites
+│   ├── backgrounds/        # Background images
+│   └── audio/              # Music and sound effects
+├── data/
+│   └── nodes-base.json     # All narrative content and resources
+├── config/
+│   └── config.json         # Institution configuration (generated via customization)
+├── simple/                 # Simplified web version
+│   ├── index.html          # Simplified version entry point
+│   ├── app.js              # JavaScript for navigation and rendering
+│   └── nodes.json          # Processed nodes for simplified version
+├── styles/
+│   └── game.css            # Game-specific styles
+└── README.md               # This file
 ```
 
 ## Content Sources
 
-This site incorporates content from:
-- `Prohibitive_Pathway_with_Resources.md`
-- `Balanced_Literacy_Pathway_with_Resources.md`
-- `Ai_Embracing_Pathway_with_Resources.md`
-- `Collaborative_Pathway_with_Resources.md`
-- `Structured_Path_Graph_Soka_AI_Pathways.md`
+The narrative content is stored in `data/nodes-base.json` and has been generalized for universal use. Original content was developed from pathway documentation including:
+- Prohibitive Pathway with Resources
+- Balanced/Literacy Pathway with Resources
+- AI-Embracing Pathway with Resources
+- Collaborative Pathway with Resources
 
 All pathways include citations to:
 - EDUCAUSE Review & Reports (2024-2025)
@@ -97,24 +127,28 @@ All pathways include citations to:
 - Harvard Graduate School of Education
 - Inside Higher Ed & HEPI Reports
 - NASEM Ethics of AI in Education (2023)
-- Soka University Mission & Campus Faculty Supports
+- Various institutional mission statements and faculty supports
 
 ## Deploy to GitHub Pages
 
 This site is already deployed! To update:
-1. Make changes to `nodes.json`, `app.js`, or `index.html`
-2. Commit & push to `main`
+1. Make changes to `data/nodes-base.json`, game files, or `index.html`
+2. Commit & push to `main` (or `universal-script` branch for universal version)
 3. GitHub Pages automatically rebuilds (1-2 minutes)
 4. Changes appear at the live URL
+
+**Note:** The `universal-script` branch contains the generalized version with all Soka-specific references removed. This branch is recommended for institutions wanting to customize the experience.
 
 ## How to Use This Explorer
 
 ### For Faculty
-1. **Navigate the scenarios** — Start at D1 and choose a pedagogical stance
-2. **Read the narratives** — Experience realistic classroom dilemmas
-3. **Explore resources** — Click through curated academic articles and reports
-4. **Switch paths** — Try different approaches to see trade-offs
-5. **Reflect** — End at R1 to connect outcomes to Soka's mission
+1. **Customize (optional)** — Enter your institution details when prompted
+2. **Select a character** — Choose from available character options
+3. **Navigate the scenarios** — Start at D1 and choose a pedagogical stance
+4. **Read the narratives** — Experience realistic classroom dilemmas with typewriter effect
+5. **Explore resources** — Click the Resources button to access curated academic articles
+6. **Switch paths** — Try different approaches to see trade-offs
+7. **Reflect** — End at R1 to submit meta-reflection connecting outcomes to your institution's mission
 
 ### For Facilitators
 - Share the link before or during workshops
@@ -132,11 +166,13 @@ This site is already deployed! To update:
 ## Editing Content
 
 ### Quick Updates
-Edit `nodes.json` directly to:
+Edit `data/nodes-base.json` directly to:
 - Update narratives
 - Add/modify resources
 - Change decision labels
 - Adjust node connections
+
+**Note:** The file uses placeholders like `{{institution}}`, `{{institution_short}}`, `{{value1}}`, etc. These are automatically replaced with values from the customization interface or default config.
 
 ### Adding Nodes
 1. Follow naming convention: `P1`, `B2A`, `E3A`, etc.
@@ -144,7 +180,7 @@ Edit `nodes.json` directly to:
 3. Link from existing nodes via `choices[].to`
 4. Test navigation flow
 
-## Content Structure (`nodes.json`)
+## Content Structure (`data/nodes-base.json`)
 ```json
 {
   "P1": {
@@ -168,7 +204,8 @@ This explorer is designed around **value-creating education** principles:
 - **Branching paths** — Decisions have consequences, mirroring real classroom complexity
 - **Path switching** — Faculty can pivot approaches, modeling pedagogical flexibility
 - **Resource integration** — Academic citations ground choices in scholarship
-- **Mission alignment** — Meta-reflection ties outcomes to Soka's values
+- **Mission alignment** — Meta-reflection ties outcomes to institutional values
+- **Universal design** — Content generalized for any institution with customization support
 
 ### Learning Outcomes
 Faculty who complete the explorer will:
@@ -179,16 +216,35 @@ Faculty who complete the explorer will:
 - Practice flexible, value-driven decision-making
 
 ## Technical Details
+- **Game engine** — Phaser.js 3.80+ (via CDN)
 - **No build process** — Pure HTML/JS/JSON
 - **No backend** — Fully static, runs on any web server
-- **No dependencies** — Only Tailwind CSS via CDN
+- **Email integration** — EmailJS for sending reflection submissions
 - **Instant updates** — Edit JSON, refresh browser
 - **Portable** — Download and run locally anytime
+- **Mobile responsive** — Touch controls and responsive design
+
+## Customization
+
+The game includes a built-in customization interface that allows you to:
+- Set your institution's name, short name, and possessive form
+- Configure mission page URL and link label
+- Set email recipients for meta-reflection submissions
+- All customization is optional - you can skip and use default values
+
+The content has been generalized to work for any institution. Soka-specific references have been removed and replaced with placeholders that are populated from the customization interface.
+
+## Branches
+
+- **`main`** — Main branch (may contain Soka-specific content)
+- **`universal-script`** — Universal version with all Soka-specific references removed (recommended for other institutions)
 
 ## Credits
 
-**Developed for:** Soka University of America  
+**Originally developed for:** Soka University of America  
 **Workshop:** 2025 Faculty Workshop on AI in Education  
+**Now available for:** Any institution  
+**Developers:** Ian Read & Matheus Vicentin  
 **License:** MIT
 
 ---
