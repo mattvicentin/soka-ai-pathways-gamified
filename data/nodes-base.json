@@ -99,7 +99,7 @@
     "path": "prohibitive",
     "pathLabel": "Prohibitive",
     "title": "Setting the Boundary",
-    "narrative": "You draft your new course policy: \"AI-generated text is not permitted on any assignments.\" You frame it as protecting academic honesty and human dignity. You also point to {{institution_short}}'s commitment to be {{motto}}, pointing out that allowing machines to think for us or do our work appears to be the opposite of this motto. Finally, you point out that many important leaders have begun to sound the alarm on the potential destructive power of AI, and if your job is to help train the \"pioneers of a global civilization,\" then humanity should be resisting AI, not embracing it, for it is already becoming weaponized. Students nod, although many seem unconvinced. One international student reluctantly and privately asks if translation tools count, while another asks if they can use Grammarly or Microsoft Word's \"algorithmic grammar correction\" tools.",
+    "narrative": "You draft your new course policy: \"AI-generated text is not permitted on any assignments.\" You frame it as protecting academic honesty and human dignity. You also point to {{institution_short}}'s commitment to be {{motto}}, pointing out that allowing machines to think for us or do our work appears to be the opposite of this motto. Finally, you point out that many important leaders have begun to sound the alarm on the potential destructive power of AI, and if your job is to help train future leaders, then humanity should be resisting AI, not embracing it, for it is already becoming weaponized. Students nod, although many seem unconvinced. One international student reluctantly and privately asks if translation tools count, while another asks if they can use Grammarly or Microsoft Word's \"algorithmic grammar correction\" tools.",
     "resources": [
       {
         "label": "Frontiers in Psychology (2024) \u2014 From Tools to Threats",
@@ -259,7 +259,7 @@
     "path": "balanced",
     "pathLabel": "Balanced / Literacy",
     "title": "Ethical AI Workshops",
-    "narrative": "Week three. Students bring examples of AI output alongside their own writing. They identify what AI captures \u2014 and what it misses. Discussion turns lively: \"How do we know when AI's help becomes substitution?\" You surface {{institution_short}}'s mission and values, asking which uses cultivate leaders of culture in the community. You realize they're not just learning writing \u2014 they're learning judgment.",
+    "narrative": "Week three. Students bring examples of AI output alongside their own writing. They identify what AI captures \u2014 and what it misses. Discussion turns lively: \"How do we know when AI's help becomes substitution?\" You surface {{institution_short}}'s mission and values, asking which uses cultivate leaders who make meaningful contributions. You realize they're not just learning writing \u2014 they're learning judgment.",
     "resources": [
       {
         "label": "EDUCAUSE (2024) \u2014 A Framework for AI Literacy (Executive Summary)",
@@ -288,7 +288,7 @@
     "path": "balanced",
     "pathLabel": "Balanced / Literacy",
     "title": "Refining the Policy",
-    "narrative": "Together, the class revises its \"AI Use Agreement.\" Students agree to cite AI assistance, reflect on their process, and take responsibility for final ideas. You highlight alignment with {{institution_short}}'s aim to foster leaders of culture who act with integrity. You notice improved confidence in emerging writers and fewer integrity concerns. Still, updating and clarifying the policy each semester takes time. Some colleagues worry: \"Won't this gray area confuse students?\"",
+    "narrative": "Together, the class revises its \"AI Use Agreement.\" Students agree to cite AI assistance, reflect on their process, and take responsibility for final ideas. You highlight alignment with {{institution_short}}'s aim to foster leaders who act with integrity. You notice improved confidence in emerging writers and fewer integrity concerns. Still, updating and clarifying the policy each semester takes time. Some colleagues worry: \"Won't this gray area confuse students?\"",
     "resources": [
       {
         "label": "Campbell University \u2014 AI in Higher Education Survey",
@@ -317,7 +317,7 @@
     "path": "balanced",
     "pathLabel": "Balanced / Literacy",
     "title": "Outcome: Ethical Clarity Through Dialogue",
-    "narrative": "By term's end, students submit reflective essays describing how AI shaped their thinking. Most express gratitude for being trusted to decide responsibly. A few still wish for simpler rules, but many highlight new awareness: \"I learned not just what AI can do \u2014 but what I can do with it.\" You guide them to name which SUA values their choices advanced: {{value1}}, culture, {{value3}}, or {{value4}}. You sense the course has fostered something deeper than compliance: wisdom linked to mission.",
+    "narrative": "By term's end, students submit reflective essays describing how AI shaped their thinking. Most express gratitude for being trusted to decide responsibly. A few still wish for simpler rules, but many highlight new awareness: \"I learned not just what AI can do \u2014 but what I can do with it.\" You guide them to name which {{institution_short}} values their choices advanced: {{value1}}, culture, {{value3}}, or {{value4}}. You sense the course has fostered something deeper than compliance: wisdom linked to mission.",
     "resources": [
       {
         "label": "Wageningen University \u2014 In AI We Trust?",
@@ -370,7 +370,7 @@
     "path": "embracing",
     "pathLabel": "AI\u2011Embracing",
     "title": "First Iteration",
-    "narrative": "Students experiment with AI during early drafts. Some produce nuanced reflections; others hand in work too dependent on the tool. In discussion, you model critical use: showing how to question AI's assumptions. The room fills with excited and uncertain energy. One student says, \"I've never thought so much about how I write.\" Another links the work to preparing for peacebuilding dialogues abroad.",
+    "narrative": "Students experiment with AI during early drafts. Some produce nuanced reflections; others hand in work too dependent on the tool. In discussion, you model critical use: showing how to question AI's assumptions. The room fills with excited and uncertain energy. One student says, \"I've never thought so much about how I write.\" Another links the work to preparing for meaningful international engagement.",
     "resources": [
       {
         "label": "Transparent AI Integration \u2014 Best Practices for Citing AI",
@@ -491,7 +491,7 @@
     "path": "collaborative",
     "pathLabel": "Collaborative",
     "title": "Shared Experimentation",
-    "narrative": "Each week, students log one AI interaction \u2014 a prompt, a response, and their reflection on it. In class, small groups analyze where the tool enhanced or hindered their thinking. Surprisingly, students begin to critique AI's biases and limits more deeply than expected. You frame the practice as nurturing leaders of culture in the community who can steward technology with care.",
+    "narrative": "Each week, students log one AI interaction \u2014 a prompt, a response, and their reflection on it. In class, small groups analyze where the tool enhanced or hindered their thinking. Surprisingly, students begin to critique AI's biases and limits more deeply than expected. You frame the practice as nurturing leaders who can steward technology with care.",
     "resources": [
       {
         "label": "Campbell University \u2014 AI in Higher Education Survey",
@@ -506,7 +506,7 @@
       {
         "label": "{{institution_short}} Institute for Global Solutions",
         "url": "{{institution_institute_url}}",
-        "why": "SIGS projects for global cooperation embodying collaborative spirit."
+        "why": "{{institution_short}} projects for global cooperation embodying collaborative spirit."
       }
     ],
     "choices": [
@@ -583,7 +583,7 @@
     "path": "shared",
     "pathLabel": "Meta\u2011Reflection",
     "title": "Teaching for Value Creation in the AI Era",
-    "narrative": "As you moved through the pathways, you balanced integrity, creativity, equity, and trust under real constraints. Summarize what you protected, what you risked, and what you learned. Then, connect those insights to {{institution_short}}'s mission of humanistic, contributive education. What is one concrete next step you will take to integrate these lessons into your next seminar's design, assessment, or dialogue? Thank you for participating in {{institution_short}} AI Pathways Explorer!",
+    "narrative": "As you moved through the pathways, you balanced integrity, creativity, equity, and trust under real constraints. Summarize what you protected, what you risked, and what you learned. Then, connect those insights to {{institution_short}}'s mission of transformative education. What is one concrete next step you will take to integrate these lessons into your next seminar's design, assessment, or dialogue? Thank you for participating in {{institution_short}} AI Pathways Explorer!",
     "resources": [
       {
         "label": "{{mission_label}}",
@@ -603,12 +603,12 @@
     "path": "balanced",
     "pathLabel": "Balanced / Literacy",
     "title": "Human Rights Case Workshop",
-    "narrative": "You anchor the seminar in a human-rights case study drawn from the Pacific Basin. Teams map how AI could support research, storytelling, or advocacy, documenting risks to dignity and accuracy. Students connect decisions to {{institution_short}}'s founding principle of upholding human rights. Debate runs hot when one team argues AI translation could amplify marginalized voices faster.",
+    "narrative": "You anchor the seminar in a human-rights case study. Teams map how AI could support research, storytelling, or advocacy, documenting risks to dignity and accuracy. Students connect decisions to {{institution_short}}'s founding principle of upholding human rights. Debate runs hot when one team argues AI translation could amplify marginalized voices faster.",
     "resources": [
       {
         "label": "{{research_center}}",
         "url": "{{research_center_url}}",
-        "why": "PBRC's mission for humanistic development and human rights in Asia-Pacific."
+        "why": "{{research_center}}'s mission for humanistic development and human rights."
       },
       {
         "label": "UNESCO (2023) \u2014 Guidance for GenAI in Education",
@@ -637,7 +637,7 @@
       {
         "label": "{{research_center}}",
         "url": "{{research_center_url}}",
-        "why": "PBRC's mission for peaceful, humanistic development of Asia-Pacific region."
+        "why": "{{research_center}}'s mission for peaceful, humanistic development."
       },
       {
         "label": "USIP \u2014 Peacebuilding Toolkits",
@@ -666,7 +666,7 @@
     "path": "collaborative",
     "pathLabel": "Collaborative",
     "title": "Community Storytelling Lab",
-    "narrative": "Your seminar partners with a campus program to host a community storytelling lab. Student teams craft guidelines for using AI to support oral histories from local activists. They debate whether AI summaries honor or flatten lived experience, anchoring decisions in {{institution_short}}'s principle of educating leaders of culture in the community.",
+    "narrative": "Your seminar partners with a campus program to host a community storytelling lab. Student teams craft guidelines for using AI to support oral histories from local activists. They debate whether AI summaries honor or flatten lived experience, anchoring decisions in {{institution_short}}'s principle of educating leaders who make meaningful contributions.",
     "resources": [
       {
         "label": "Helping Writers Become Authors \u2014 Intentional Storytelling in the AI Era",
